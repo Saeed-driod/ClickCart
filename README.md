@@ -1,6 +1,6 @@
 # 🛒 ClickCart — Full-Featured E-Commerce Store
 
-**ClickCart** is a modern, production-ready, full-stack e-commerce web application engineered with **Next.js 14+ (App Router)**, **TypeScript**, **Tailwind CSS**, **Prisma ORM**, **Neon Postgres**, **NextAuth.js**, and **Zustand**. It is fully optimized for single-click deployment to **Vercel** with zero paid dependencies.
+**ClickCart** is a modern, production-ready, full-stack e-commerce web application engineered with **Next.js 14+ (App Router)**, **TypeScript**, **Tailwind CSS**, **Prisma ORM**, **MongoDB Atlas**, **NextAuth.js**, and **Zustand**. It is fully optimized for single-click deployment to **Vercel** with zero paid dependencies.
 
 ---
 

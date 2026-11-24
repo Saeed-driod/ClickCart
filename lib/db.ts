@@ -287,8 +287,9 @@ export async function getProducts(options?: {
 export async function getProductBySlug(slug: string): Promise<ProductItem | null> {
   try {
     if (isDatabaseActive()) {
-      const prod = await prisma.product.findUnique({
-        where: { slug },
+      const isMongoId = /^[0-9a-fA-F]{24}$/.test(slug);
+      const prod = await prisma.product.findFirst({
+        where: isMongoId ? { OR: [{ id: slug }, { slug }] } : { slug },
         include: {
           category: true,
           brand: true,
@@ -355,10 +356,11 @@ export async function getOrders(userId?: string): Promise<OrderType[]> {
 export async function getOrderById(idOrNumber: string): Promise<OrderType | null> {
   try {
     if (isDatabaseActive()) {
+      const isMongoId = /^[0-9a-fA-F]{24}$/.test(idOrNumber);
       const order = await prisma.order.findFirst({
-        where: {
-          OR: [{ id: idOrNumber }, { orderNumber: idOrNumber }],
-        },
+        where: isMongoId
+          ? { OR: [{ id: idOrNumber }, { orderNumber: idOrNumber }] }
+          : { orderNumber: idOrNumber },
         include: { items: true },
       });
       if (order) return order as unknown as OrderType;
@@ -394,10 +396,31 @@ export async function createOrder(orderData: Partial<OrderType>): Promise<OrderT
 
   try {
     if (isDatabaseActive()) {
+      const preparedItems = await Promise.all(
+        newOrder.items.map(async (item) => {
+          let pId = item.productId;
+          if (!/^[0-9a-fA-F]{24}$/.test(pId)) {
+            const found = await prisma.product.findFirst({
+              where: { name: item.productName },
+              select: { id: true },
+            });
+            if (found) pId = found.id;
+          }
+          return {
+            productId: pId,
+            productName: item.productName,
+            productImage: item.productImage,
+            price: item.price,
+            quantity: item.quantity,
+            subtotal: item.subtotal,
+          };
+        })
+      );
+
       const dbOrder = await prisma.order.create({
         data: {
           orderNumber: newOrder.orderNumber,
-          userId: newOrder.userId,
+          userId: newOrder.userId && /^[0-9a-fA-F]{24}$/.test(newOrder.userId) ? newOrder.userId : null,
           customerName: newOrder.customerName,
           customerEmail: newOrder.customerEmail,
           customerPhone: newOrder.customerPhone,
@@ -413,14 +436,7 @@ export async function createOrder(orderData: Partial<OrderType>): Promise<OrderT
           trackingNumber: newOrder.trackingNumber,
           trackingNotes: newOrder.trackingNotes,
           items: {
-            create: newOrder.items.map((item) => ({
-              productId: item.productId,
-              productName: item.productName,
-              productImage: item.productImage,
-              price: item.price,
-              quantity: item.quantity,
-              subtotal: item.subtotal,
-            })),
+            create: preparedItems,
           },
         },
         include: { items: true },
@@ -514,9 +530,7 @@ export async function validateCoupon(code: string, subtotal: number): Promise<{
 export async function getStoreSettings() {
   try {
     if (isDatabaseActive()) {
-      const settings = await prisma.storeSettings.findUnique({
-        where: { id: "default" },
-      });
+      const settings = await prisma.storeSettings.findFirst();
       if (settings) return settings;
     }
   } catch (e) {}

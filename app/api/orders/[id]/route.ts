@@ -27,8 +27,10 @@ export async function PATCH(
 
     try {
       if (process.env.DATABASE_URL && !process.env.DATABASE_URL.includes("placeholder")) {
+        const isMongoId = /^[0-9a-fA-F]{24}$/.test(params.id);
+        const where = isMongoId ? { id: params.id } : { orderNumber: params.id };
         updated = await prisma.order.update({
-          where: { id: params.id },
+          where,
           data: json,
         });
       }
