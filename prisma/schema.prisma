@@ -1,0 +1,225 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  CUSTOMER
+  ADMIN
+}
+
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+}
+
+enum DiscountType {
+  PERCENTAGE
+  FIXED
+}
+
+model User {
+  id            String         @id @default(cuid())
+  name          String?
+  email         String         @unique
+  password      String?
+  role          Role           @default(CUSTOMER)
+  image         String?
+  phone         String?
+  isActive      Boolean        @default(true)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  orders        Order[]
+  reviews       Review[]
+  addresses     Address[]
+  cartItems     CartItem[]
+  wishlistItems WishlistItem[]
+}
+
+model Address {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fullName    String
+  phone       String
+  street      String
+  city        String
+  state       String
+  postalCode  String
+  country     String   @default("Pakistan")
+  isDefault   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Category {
+  id          String    @id @default(cuid())
+  name        String
+  slug        String    @unique
+  description String?
+  image       String?
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  products    Product[]
+}
+
+model Brand {
+  id          String    @id @default(cuid())
+  name        String
+  slug        String    @unique
+  logo        String?
+  description String?
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  products    Product[]
+}
+
+model Product {
+  id            String         @id @default(cuid())
+  name          String
+  slug          String         @unique
+  description   String
+  price         Float
+  salePrice     Float?
+  sku           String         @unique
+  stock         Int            @default(0)
+  images        String[]
+  featured      Boolean        @default(false)
+  isFlashDeal   Boolean        @default(false)
+  flashDealEnd  DateTime?
+  isActive      Boolean        @default(true)
+  rating        Float          @default(0)
+  reviewCount   Int            @default(0)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  categoryId    String
+  category      Category       @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  brandId       String?
+  brand         Brand?         @relation(fields: [brandId], references: [id], onDelete: SetNull)
+
+  reviews       Review[]
+  orderItems    OrderItem[]
+  cartItems     CartItem[]
+  wishlistItems WishlistItem[]
+}
+
+model Review {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productId  String
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  rating     Int
+  comment    String
+  isApproved Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Order {
+  id              String        @id @default(cuid())
+  orderNumber     String        @unique
+  userId          String?
+  user            User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  customerName    String
+  customerEmail   String
+  customerPhone   String
+  shippingAddress String
+  paymentMethod   String        @default("COD")
+  paymentStatus   PaymentStatus @default(PENDING)
+  orderStatus     OrderStatus   @default(PENDING)
+  subtotal        Float
+  discountAmount  Float         @default(0)
+  shippingFee     Float         @default(0)
+  totalAmount     Float
+  couponCode      String?
+  trackingNumber  String?
+  trackingNotes   String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  items           OrderItem[]
+}
+
+model OrderItem {
+  id           String   @id @default(cuid())
+  orderId      String
+  order        Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId    String
+  product      Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
+  productName  String
+  productImage String
+  price        Float
+  quantity     Int
+  subtotal     Float
+}
+
+model Coupon {
+  id             String       @id @default(cuid())
+  code           String       @unique
+  discountType   DiscountType @default(PERCENTAGE)
+  discountValue  Float
+  minOrderAmount Float        @default(0)
+  maxDiscount    Float?
+  expiryDate     DateTime
+  usageLimit     Int?
+  usedCount      Int          @default(0)
+  isActive       Boolean      @default(true)
+  createdAt      DateTime     @default(now())
+}
+
+model CartItem {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  quantity  Int      @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, productId])
+}
+
+model WishlistItem {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, productId])
+}
+
+model StoreSettings {
+  id                    String   @id @default("default")
+  storeName             String   @default("ClickCart")
+  storeEmail            String   @default("support@clickcart.com")
+  storePhone            String   @default("+92 300 1234567")
+  address               String   @default("ClickCart HQ, Blue Area, Islamabad, Pakistan")
+  currency              String   @default("PKR")
+  shippingFee           Float    @default(200)
+  freeShippingThreshold Float    @default(3000)
+  logoUrl               String?
+  updatedAt             DateTime @updatedAt
+}
