@@ -18,7 +18,8 @@ import {
 } from "lucide-react";
 import { useCartStore } from "@/stores/cart-store";
 import { useWishlistStore } from "@/stores/wishlist-store";
-import { CurrencySwitcher } from "@/components/currency-switcher";
+import { useRegionStore } from "@/stores/region-store";
+import { RegionSwitcher } from "@/components/region-selector-modal";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 const NAV_CATEGORIES = [
@@ -28,8 +29,9 @@ const NAV_CATEGORIES = [
   { name: "Home & Kitchen", href: "/products?category=home-kitchen" },
   { name: "Beauty", href: "/products?category=beauty" },
   { name: "Sports", href: "/products?category=sports" },
+  { name: "Toys", href: "/products?category=toys" },
+  { name: "Books", href: "/products?category=books" },
   { name: "Groceries", href: "/products?category=groceries" },
-  { name: "Deals", href: "/products?deals=true" },
 ];
 
 export function Navbar() {
@@ -38,6 +40,7 @@ export function Navbar() {
 
   const totalCartItems = useCartStore((state) => state.getTotalItems());
   const wishlistItems = useWishlistStore((state) => state.items);
+  const region = useRegionStore((state) => state.region);
 
   const [searchQuery, setSearchQuery] = React.useState("");
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
@@ -62,25 +65,20 @@ export function Navbar() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-      {/* Top Banner */}
-      <div className="bg-gradient-to-r from-indigo-700 via-indigo-600 to-purple-600 text-white text-[11px] font-medium py-1.5 px-4 text-center tracking-wide">
-        <span>🚀 Free Express Shipping across Pakistan on orders above ₨ 3,000 | Cash on Delivery Available</span>
-      </div>
-
       {/* Main Nav */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 gap-4">
+        <div className="flex items-center justify-between h-16 gap-3 sm:gap-4">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group flex-shrink-0">
-            <div className="h-9 w-9 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-md group-hover:scale-105 transition-transform">
+            <div className="h-9 w-9 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-sm group-hover:scale-105 transition-transform">
               <ShoppingBag className="h-5 w-5" />
             </div>
             <div className="flex flex-col">
-              <span className="text-xl font-black tracking-tight bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+              <span className="text-xl font-black tracking-tight text-foreground">
                 ClickCart
               </span>
-              <span className="text-[9px] -mt-1 font-semibold uppercase tracking-widest text-muted-foreground">
-                PK Store
+              <span className="text-[10px] -mt-1 font-semibold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
+                {region === "UK" ? "🇬🇧 UK Store" : "🇺🇸 USA Store"}
               </span>
             </div>
           </Link>
@@ -88,11 +86,11 @@ export function Navbar() {
           {/* Search Bar (Desktop) */}
           <form
             onSubmit={handleSearchSubmit}
-            className="hidden md:flex flex-1 max-w-xl relative items-center"
+            className="hidden md:flex flex-1 max-w-md relative items-center"
           >
             <input
               type="text"
-              placeholder="Search 200+ products (electronics, fashion, perfumes, books)..."
+              placeholder="Search products..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full h-10 pl-10 pr-20 rounded-full border border-border bg-muted/40 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-background transition-all"
@@ -107,8 +105,8 @@ export function Navbar() {
           </form>
 
           {/* Right Action Icons */}
-          <div className="flex items-center gap-2 sm:gap-3">
-            <CurrencySwitcher />
+          <div className="flex items-center gap-2">
+            <RegionSwitcher />
             <ThemeToggle />
 
             {/* Wishlist Icon */}
@@ -133,7 +131,7 @@ export function Navbar() {
             >
               <ShoppingBag className="h-5 w-5" />
               {totalCartItems > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-[16px] px-1 items-center justify-center rounded-full bg-indigo-600 text-[10px] font-bold text-white animate-pulse">
+                <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-[16px] px-1 items-center justify-center rounded-full bg-indigo-600 text-[10px] font-bold text-white">
                   {totalCartItems}
                 </span>
               )}
@@ -154,10 +152,10 @@ export function Navbar() {
               ) : (
                 <Link
                   href="/auth/signin"
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 text-white hover:bg-indigo-700 transition-colors shadow-sm"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 text-white hover:bg-indigo-700 transition-colors"
                 >
                   <User className="h-3.5 w-3.5" />
-                  <span>Sign In</span>
+                  <span className="hidden sm:inline">Sign In</span>
                 </Link>
               )}
 
@@ -171,11 +169,6 @@ export function Navbar() {
                     <div className="px-4 py-2 border-b border-border">
                       <p className="font-semibold text-foreground truncate">{session.user?.name}</p>
                       <p className="text-xs text-muted-foreground truncate">{session.user?.email}</p>
-                      {isAdmin && (
-                        <span className="inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-bold bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300">
-                          Store Admin
-                        </span>
-                      )}
                     </div>
 
                     {isAdmin && (
@@ -228,13 +221,13 @@ export function Navbar() {
               className="md:hidden p-2 rounded-lg text-muted-foreground hover:bg-muted"
               aria-label="Toggle Navigation"
             >
-              {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </button>
           </div>
         </div>
 
-        {/* Categories Bar (Desktop) */}
-        <nav className="hidden md:flex items-center gap-6 py-2.5 border-t border-border/50 text-xs font-medium text-muted-foreground overflow-x-auto">
+        {/* Simple Categories Bar (Desktop) */}
+        <nav className="hidden md:flex items-center gap-6 py-2 border-t border-border/50 text-xs font-medium text-muted-foreground overflow-x-auto">
           {NAV_CATEGORIES.map((cat) => (
             <Link
               key={cat.name}

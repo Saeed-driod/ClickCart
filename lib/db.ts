@@ -147,6 +147,7 @@ export async function getProducts(options?: {
   search?: string;
   category?: string;
   brand?: string;
+  region?: string;
   minPrice?: number;
   maxPrice?: number;
   rating?: number;
@@ -160,6 +161,9 @@ export async function getProducts(options?: {
   try {
     if (isDatabaseActive()) {
       const where: any = { isActive: true };
+      if (options?.region && (options.region === "USA" || options.region === "UK")) {
+        where.region = options.region;
+      }
       if (options?.category) {
         where.category = { slug: options.category };
       }
@@ -222,6 +226,9 @@ export async function getProducts(options?: {
   // Memory fallback query logic
   let filtered = [...memoryProducts].filter((p) => p.isActive);
 
+  if (options?.region && (options.region === "USA" || options.region === "UK")) {
+    filtered = filtered.filter((p) => p.region === options.region);
+  }
   if (options?.category) {
     filtered = filtered.filter(
       (p) => p.category?.slug.toLowerCase() === options.category?.toLowerCase() || p.categoryId === options.category

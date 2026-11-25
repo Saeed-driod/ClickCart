@@ -4,19 +4,19 @@ import "./globals.css";
 import { Providers } from "@/components/providers";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
+import { RegionSelectorModal } from "@/components/region-selector-modal";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "ClickCart - Pakistan's Premier Online Shopping Destination",
+  title: "ClickCart - Simple & Fast Online Shopping (USA & UK)",
   description:
-    "Shop 200+ top electronics, fashion, home appliances, beauty products, sports gear, toys, books, and groceries with express Cash on Delivery across Pakistan.",
-  keywords: "ecommerce, online shopping pakistan, clickcart, electronics, fashion, cash on delivery",
+    "Shop electronics, fashion, home essentials, beauty, sports, toys, books, and groceries in the USA and UK.",
+  keywords: "ecommerce, online shopping, clickcart, usa, uk, electronics, fashion",
   openGraph: {
-    title: "ClickCart - Premier E-Commerce Store",
-    description: "Shop 200+ curated products with fast Cash on Delivery across Pakistan.",
+    title: "ClickCart - USA & UK Online Store",
+    description: "Select your region (USA or UK) and shop curated products.",
     type: "website",
-    locale: "en_PK",
     siteName: "ClickCart",
   },
 };
@@ -30,6 +30,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.className} min-h-screen flex flex-col`}>
         <Providers>
+          <RegionSelectorModal />
           <Navbar />
           <main className="flex-1">{children}</main>
           <Footer />

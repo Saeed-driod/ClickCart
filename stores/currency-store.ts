@@ -10,7 +10,7 @@ interface CurrencyStore {
 export const useCurrencyStore = create<CurrencyStore>()(
   persist(
     (set) => ({
-      currency: "PKR",
+      currency: "USD",
       setCurrency: (code) => set({ currency: code }),
     }),
     {

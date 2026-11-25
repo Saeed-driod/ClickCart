@@ -82,6 +82,7 @@ model Product {
   isFlashDeal   Boolean        @default(false)
   flashDealEnd  DateTime?
   isActive      Boolean        @default(true)
+  region        String         @default("USA")
   rating        Float          @default(0)
   reviewCount   Int            @default(0)
   createdAt     DateTime       @default(now())

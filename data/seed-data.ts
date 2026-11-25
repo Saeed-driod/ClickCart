@@ -29,6 +29,7 @@ export interface ProductSeed {
   flashDealEnd?: string | null;
   rating: number;
   reviewCount: number;
+  region: "USA" | "UK";
   categoryId: string;
   brandId?: string;
 }
@@ -317,6 +318,7 @@ function generateProducts(): ProductSeed[] {
         flashDealEnd: isFlash ? new Date(Date.now() + 86400000 * 3).toISOString() : null,
         rating: Number((4.1 + Math.random() * 0.8).toFixed(1)),
         reviewCount: Math.floor(Math.random() * 120) + 12,
+        region: idx % 2 === 0 ? "USA" : "UK",
         categoryId: catId,
         brandId: catInfo.brand,
       });

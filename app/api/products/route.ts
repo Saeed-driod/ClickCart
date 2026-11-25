@@ -20,6 +20,7 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get("search") || undefined;
     const category = searchParams.get("category") || undefined;
     const brand = searchParams.get("brand") || undefined;
+    const region = searchParams.get("region") || undefined;
     const minPrice = searchParams.get("minPrice") ? Number(searchParams.get("minPrice")) : undefined;
     const maxPrice = searchParams.get("maxPrice") ? Number(searchParams.get("maxPrice")) : undefined;
     const rating = searchParams.get("rating") ? Number(searchParams.get("rating")) : undefined;
@@ -32,6 +33,7 @@ export async function GET(request: NextRequest) {
       search,
       category,
       brand,
+      region,
       minPrice,
       maxPrice,
       rating,

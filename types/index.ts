@@ -17,6 +17,7 @@ export interface ProductItem {
   isFlashDeal?: boolean;
   flashDealEnd?: string | Date | null;
   isActive: boolean;
+  region?: "USA" | "UK" | string;
   rating: number;
   reviewCount: number;
   categoryId: string;

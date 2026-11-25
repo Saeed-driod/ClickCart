@@ -1,5 +1,6 @@
 import React from "react";
 import Link from "next/link";
+import { cookies } from "next/headers";
 import { getProducts, getCategories, getBrands } from "@/lib/db";
 import { ProductCard } from "@/components/product-card";
 import { ProductsFilter } from "@/components/products-filter";
@@ -10,6 +11,7 @@ interface ProductsPageProps {
     search?: string;
     category?: string;
     brand?: string;
+    region?: string;
     minPrice?: string;
     maxPrice?: string;
     rating?: string;
@@ -21,11 +23,20 @@ interface ProductsPageProps {
   };
 }
 
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
 export default async function ProductsPage({ searchParams }: ProductsPageProps) {
   const page = Number(searchParams.page) || 1;
   const limit = 16;
+
+  const cookieStore = cookies();
+  const regionCookie = cookieStore.get("clickcart_region")?.value;
+  const activeRegion =
+    searchParams.region === "UK" || searchParams.region === "USA"
+      ? searchParams.region
+      : regionCookie === "UK"
+      ? "UK"
+      : "USA";
 
   const [categories, brands, result] = await Promise.all([
     getCategories(),
@@ -34,6 +45,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
       search: searchParams.search,
       category: searchParams.category,
       brand: searchParams.brand,
+      region: activeRegion,
       minPrice: searchParams.minPrice ? Number(searchParams.minPrice) : undefined,
       maxPrice: searchParams.maxPrice ? Number(searchParams.maxPrice) : undefined,
       rating: searchParams.rating ? Number(searchParams.rating) : undefined,
@@ -76,15 +88,13 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
           <div>
             <h1 className="text-2xl sm:text-3xl font-black text-foreground">
               {searchParams.search
-                ? `Search results for "${searchParams.search}"`
+                ? `Search: "${searchParams.search}"`
                 : currentCategory
-                ? currentCategory.name
-                : searchParams.deals === "true"
-                ? "Flash Deals & Discounts"
-                : "All Products Catalog"}
+                ? `${activeRegion === "UK" ? "🇬🇧" : "🇺🇸"} ${currentCategory.name}`
+                : `${activeRegion === "UK" ? "🇬🇧 UK" : "🇺🇸 USA"} Products`}
             </h1>
             <p className="text-xs text-muted-foreground mt-1">
-              Showing {products.length} of {total} products
+              Showing {products.length} of {total} products in {activeRegion}
             </p>
           </div>
 
