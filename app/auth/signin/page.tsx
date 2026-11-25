@@ -4,7 +4,7 @@ import * as React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
-import { ShoppingBag, ShieldCheck, User, Lock, Mail, ArrowRight } from "lucide-react";
+import { ShoppingBag, User, Lock, Mail, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -44,17 +44,13 @@ function SignInContent() {
     }
   };
 
-  const handleQuickLogin = async (role: "admin" | "customer") => {
+  const handleDemoCustomerLogin = async () => {
     setIsLoading(true);
-    const credentials =
-      role === "admin"
-        ? { email: "admin@clickcart.com", password: "Admin@123" }
-        : { email: "customer@clickcart.com", password: "Customer@123" };
-
     const result = await signIn("credentials", {
-      ...credentials,
+      email: "customer@clickcart.com",
+      password: "Customer@123",
       redirect: false,
-      callbackUrl: role === "admin" ? "/admin" : callbackUrl,
+      callbackUrl,
     });
 
     setIsLoading(false);
@@ -62,8 +58,8 @@ function SignInContent() {
     if (result?.error) {
       toast.error(result.error);
     } else {
-      toast.success(`Logged in as ${role === "admin" ? "Administrator" : "Customer"}!`);
-      router.push(role === "admin" ? "/admin" : callbackUrl);
+      toast.success("Logged in as Customer!");
+      router.push(callbackUrl);
       router.refresh();
     }
   };
@@ -77,44 +73,30 @@ function SignInContent() {
             <div className="h-10 w-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-md">
               <ShoppingBag className="h-5 w-5" />
             </div>
-            <span className="text-2xl font-black bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-              ClickCart
-            </span>
+            <span className="text-2xl font-black text-foreground">ClickCart</span>
           </Link>
-          <h1 className="text-2xl font-black text-foreground">Sign In to Your Account</h1>
+          <h1 className="text-2xl font-black text-foreground">Customer Sign In</h1>
           <p className="text-xs text-muted-foreground">
-            Access your orders, wishlist, and exclusive store discounts
+            Access your orders, wishlist, and saved addresses
           </p>
         </div>
 
-        {/* 1-Click Demo Logins */}
-        <div className="p-4 rounded-2xl border border-indigo-200 dark:border-indigo-900/60 bg-indigo-50/50 dark:bg-indigo-950/30 space-y-3">
-          <div className="flex items-center gap-1.5 text-xs font-bold text-indigo-700 dark:text-indigo-300">
-            <ShieldCheck className="h-4 w-4" />
-            <span>Instant Demo Access (Single Click)</span>
+        {/* Demo Customer Login */}
+        <button
+          type="button"
+          onClick={handleDemoCustomerLogin}
+          disabled={isLoading}
+          className="w-full p-3.5 rounded-2xl border border-indigo-200 dark:border-indigo-900/60 bg-indigo-50/50 dark:bg-indigo-950/30 hover:bg-indigo-100/60 transition-all flex items-center justify-between text-xs"
+        >
+          <div className="flex items-center gap-2.5">
+            <User className="h-4 w-4 text-indigo-600" />
+            <div className="text-left">
+              <span className="font-bold text-foreground block">Quick Demo Customer Login</span>
+              <span className="text-[11px] text-muted-foreground">customer@clickcart.com</span>
+            </div>
           </div>
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              type="button"
-              onClick={() => handleQuickLogin("admin")}
-              disabled={isLoading}
-              className="p-2.5 rounded-xl border border-indigo-300 dark:border-indigo-800 bg-background hover:bg-indigo-50 dark:hover:bg-indigo-950 text-left transition-all text-xs"
-            >
-              <span className="font-bold text-foreground block">Admin Portal</span>
-              <span className="text-[10px] text-muted-foreground block truncate">admin@clickcart.com</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => handleQuickLogin("customer")}
-              disabled={isLoading}
-              className="p-2.5 rounded-xl border border-indigo-300 dark:border-indigo-800 bg-background hover:bg-indigo-50 dark:hover:bg-indigo-950 text-left transition-all text-xs"
-            >
-              <span className="font-bold text-foreground block">Customer Demo</span>
-              <span className="text-[10px] text-muted-foreground block truncate">customer@clickcart.com</span>
-            </button>
-          </div>
-        </div>
+          <ArrowRight className="h-4 w-4 text-indigo-600" />
+        </button>
 
         {/* Standard Credentials Form */}
         <div className="p-6 rounded-2xl border border-border bg-card shadow-sm space-y-4">
@@ -127,7 +109,7 @@ function SignInContent() {
                 <Input
                   type="email"
                   required
-                  placeholder="admin@clickcart.com"
+                  placeholder="you@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="pl-9 text-xs"
@@ -137,12 +119,9 @@ function SignInContent() {
             </div>
 
             <div>
-              <div className="flex items-center justify-between mb-1">
-                <label className="block text-xs font-semibold text-muted-foreground">
-                  Password
-                </label>
-                <span className="text-[11px] text-muted-foreground">Demo: Admin@123</span>
-              </div>
+              <label className="block text-xs font-semibold text-muted-foreground mb-1">
+                Password
+              </label>
               <div className="relative">
                 <Input
                   type="password"
@@ -162,10 +141,6 @@ function SignInContent() {
             </Button>
           </form>
         </div>
-
-        <p className="text-center text-xs text-muted-foreground">
-          By continuing, you agree to ClickCart's Terms of Service & Privacy Policy.
-        </p>
       </div>
     </div>
   );

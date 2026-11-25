@@ -171,17 +171,6 @@ export function Navbar() {
                       <p className="text-xs text-muted-foreground truncate">{session.user?.email}</p>
                     </div>
 
-                    {isAdmin && (
-                      <Link
-                        href="/admin"
-                        onClick={() => setUserDropdownOpen(false)}
-                        className="flex items-center gap-2 px-4 py-2 text-indigo-600 hover:bg-muted font-medium transition-colors"
-                      >
-                        <ShieldCheck className="h-4 w-4" />
-                        <span>Admin Dashboard</span>
-                      </Link>
-                    )}
-
                     <Link
                       href="/account"
                       onClick={() => setUserDropdownOpen(false)}

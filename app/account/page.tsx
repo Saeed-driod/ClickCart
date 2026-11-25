@@ -68,28 +68,12 @@ export default function AccountPage() {
             {session.user?.name?.[0] || "U"}
           </div>
           <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <h1 className="text-xl sm:text-2xl font-black text-foreground">{session.user?.name}</h1>
-              {isAdmin && (
-                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300">
-                  ADMIN
-                </span>
-              )}
-            </div>
+            <h1 className="text-xl sm:text-2xl font-black text-foreground">{session.user?.name}</h1>
             <p className="text-xs text-muted-foreground">{session.user?.email}</p>
           </div>
         </div>
 
         <div className="flex items-center gap-3">
-          {isAdmin && (
-            <Link
-              href="/admin"
-              className="px-4 py-2 rounded-xl bg-indigo-600 text-white text-xs font-bold hover:bg-indigo-700 transition-colors flex items-center gap-1.5 shadow-sm"
-            >
-              <ShieldCheck className="h-4 w-4" />
-              <span>Admin Panel</span>
-            </Link>
-          )}
           <Button
             variant="outline"
             size="sm"
