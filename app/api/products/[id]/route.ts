@@ -26,15 +26,27 @@ export async function PUT(
     let updated;
 
     try {
-      if (process.env.DATABASE_URL && !process.env.DATABASE_URL.includes("placeholder")) {
+      const dbUrl = process.env.DATABASE_URL || "";
+      if (dbUrl.length > 0 && !dbUrl.includes("placeholder") && !dbUrl.includes("localhost:5432")) {
         const isMongoId = /^[0-9a-fA-F]{24}$/.test(params.id);
         const where = isMongoId ? { id: params.id } : { slug: params.id };
+
+        // Resolve categoryId if needed
+        if (json.categoryId && !/^[0-9a-fA-F]{24}$/.test(json.categoryId)) {
+          const slugGuess = json.categoryId.replace("cat-", "");
+          const cat = await prisma.category.findFirst({ where: { slug: slugGuess } });
+          if (cat) json.categoryId = cat.id;
+        }
+
         updated = await prisma.product.update({
           where,
           data: json,
+          include: { category: true, brand: true },
         });
       }
-    } catch (e) {}
+    } catch (e: any) {
+      console.error("Update product error:", e);
+    }
 
     return NextResponse.json(updated || { id: params.id, ...json });
   } catch (error: any) {
@@ -48,10 +60,11 @@ export async function DELETE(
 ) {
   try {
     try {
-      if (process.env.DATABASE_URL && !process.env.DATABASE_URL.includes("placeholder")) {
-        await prisma.product.delete({
-          where: { id: params.id },
-        });
+      const dbUrl = process.env.DATABASE_URL || "";
+      if (dbUrl.length > 0 && !dbUrl.includes("placeholder") && !dbUrl.includes("localhost:5432")) {
+        const isMongoId = /^[0-9a-fA-F]{24}$/.test(params.id);
+        const where = isMongoId ? { id: params.id } : { slug: params.id };
+        await prisma.product.delete({ where });
       }
     } catch (e) {}
 

@@ -70,6 +70,7 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
             src={product.images[0] || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&q=80"}
             alt={product.name}
             fill
+            unoptimized={(product.images[0] || "").startsWith("data:")}
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
             priority={priority}
             className="object-cover object-center transition-transform duration-500 group-hover:scale-105"

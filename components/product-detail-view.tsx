@@ -142,7 +142,13 @@ export function ProductDetailView({ product, relatedProducts }: ProductDetailVie
                     : "border-border hover:border-muted-foreground/50 opacity-70 hover:opacity-100"
                 }`}
               >
-                <Image src={img} alt={`${product.name} thumbnail ${idx + 1}`} fill className="object-cover" />
+                <Image
+                  src={img}
+                  alt={`${product.name} thumbnail ${idx + 1}`}
+                  fill
+                  unoptimized={img.startsWith("data:")}
+                  className="object-cover"
+                />
               </button>
             ))}
           </div>
@@ -153,6 +159,7 @@ export function ProductDetailView({ product, relatedProducts }: ProductDetailVie
               src={product.images[selectedImage] || product.images[0]}
               alt={product.name}
               fill
+              unoptimized={(product.images[selectedImage] || product.images[0] || "").startsWith("data:")}
               priority
               className="object-cover object-center"
             />

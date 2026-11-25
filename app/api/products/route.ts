@@ -10,6 +10,7 @@ const productCreateSchema = z.object({
   stock: z.number().int().nonnegative().default(0),
   sku: z.string().min(2, "SKU is required"),
   categoryId: z.string().min(1, "Category is required"),
+  region: z.enum(["USA", "UK"]).default("USA"),
   description: z.string().min(5, "Description must be at least 5 characters"),
   images: z.array(z.string()).default([]),
 });
@@ -58,24 +59,44 @@ export async function POST(request: NextRequest) {
     const validated = productCreateSchema.parse(json);
 
     const slug =
-      validated.name.toLowerCase().replace(/[^a-z0-9]+/g, "-") + `-${Date.now()}`;
+      validated.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") +
+      `-${Date.now()}`;
 
     let createdProduct;
     try {
       const dbUrl = process.env.DATABASE_URL || "";
       if (dbUrl.length > 0 && !dbUrl.includes("placeholder") && !dbUrl.includes("localhost:5432")) {
+        // Resolve categoryId if a slug or seed id was sent instead of ObjectId
+        let resolvedCategoryId = validated.categoryId;
+        if (!/^[0-9a-fA-F]{24}$/.test(resolvedCategoryId)) {
+          const slugGuess = resolvedCategoryId.replace("cat-", "");
+          const cat =
+            (await prisma.category.findFirst({ where: { slug: slugGuess } })) ||
+            (await prisma.category.findFirst());
+          if (cat) resolvedCategoryId = cat.id;
+        }
+
         createdProduct = await prisma.product.create({
           data: {
             ...validated,
+            categoryId: resolvedCategoryId,
             slug,
             rating: 5.0,
             reviewCount: 0,
             isActive: true,
           },
+          include: {
+            category: true,
+            brand: true,
+          },
         });
       }
-    } catch (dbErr) {
-      console.warn("DB write fallback:", dbErr);
+    } catch (dbErr: any) {
+      console.error("DB create product error:", dbErr);
+      return NextResponse.json(
+        { error: dbErr.message || "Database error while creating product" },
+        { status: 500 }
+      );
     }
 
     if (!createdProduct) {
