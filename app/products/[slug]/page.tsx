@@ -16,7 +16,7 @@ export async function generateMetadata({ params }: ProductDetailPageProps) {
   if (!product) return { title: "Product Not Found - ClickCart" };
 
   return {
-    title: `${product.name} - ClickCart Pakistan`,
+    title: `${product.name} - ClickCart ${product.region || "USA"}`,
     description: product.description.slice(0, 160),
     openGraph: {
       title: product.name,
@@ -33,9 +33,12 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
     notFound();
   }
 
-  // Fetch related products in the same category
+  const productRegion = product.region === "UK" ? "UK" : "USA";
+
+  // Fetch related products ONLY from the same region and category
   const relatedResult = await getProducts({
     category: product.category?.slug,
+    region: productRegion,
     limit: 5,
   });
 
@@ -47,12 +50,14 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
       <nav className="text-xs text-muted-foreground mb-6 flex items-center gap-1.5 flex-wrap">
         <Link href="/" className="hover:text-foreground">Home</Link>
         <span>/</span>
-        <Link href="/products" className="hover:text-foreground">Products</Link>
+        <Link href={`/products?region=${productRegion}`} className="hover:text-foreground">
+          {productRegion === "UK" ? "🇬🇧 UK Products" : "🇺🇸 USA Products"}
+        </Link>
         {product.category && (
           <>
             <span>/</span>
             <Link
-              href={`/products?category=${product.category.slug}`}
+              href={`/products?region=${productRegion}&category=${product.category.slug}`}
               className="hover:text-foreground"
             >
               {product.category.name}

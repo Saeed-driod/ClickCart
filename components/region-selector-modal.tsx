@@ -1,8 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { useRouter, usePathname } from "next/navigation";
-import { ShoppingBag, CheckCircle2, ArrowRight, Globe } from "lucide-react";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { ShoppingBag, CheckCircle2, ArrowRight } from "lucide-react";
 import { useRegionStore, RegionCode } from "@/stores/region-store";
 
 export function RegionSelectorModal() {
@@ -19,6 +19,12 @@ export function RegionSelectorModal() {
 
   const handleSelect = (selected: RegionCode) => {
     setRegion(selected);
+    if (pathname === "/products") {
+      const params = new URLSearchParams(window.location.search);
+      params.set("region", selected);
+      params.set("page", "1");
+      router.push(`/products?${params.toString()}`);
+    }
     router.refresh();
   };
 
@@ -34,7 +40,7 @@ export function RegionSelectorModal() {
             Welcome to ClickCart
           </h2>
           <p className="text-sm text-muted-foreground max-w-md mx-auto">
-            Please choose your region to see products and prices tailored for you.
+            Please choose your region. Each region has its own dedicated products and currency.
           </p>
         </div>
 
@@ -51,10 +57,10 @@ export function RegionSelectorModal() {
               United States (USA)
             </h3>
             <p className="text-xs text-muted-foreground mt-1">
-              Shop USA Store • Prices in USD ($)
+              Exclusive USA Products • USD ($)
             </p>
             <span className="mt-4 inline-flex items-center gap-1 text-xs font-bold text-indigo-600">
-              View USA Products <ArrowRight className="h-3.5 w-3.5" />
+              Shop USA Store <ArrowRight className="h-3.5 w-3.5" />
             </span>
           </button>
 
@@ -69,10 +75,10 @@ export function RegionSelectorModal() {
               United Kingdom (UK)
             </h3>
             <p className="text-xs text-muted-foreground mt-1">
-              Shop UK Store • Prices in GBP (£)
+              Exclusive UK Products • GBP (£)
             </p>
             <span className="mt-4 inline-flex items-center gap-1 text-xs font-bold text-indigo-600">
-              View UK Products <ArrowRight className="h-3.5 w-3.5" />
+              Shop UK Store <ArrowRight className="h-3.5 w-3.5" />
             </span>
           </button>
         </div>
@@ -88,7 +94,8 @@ export function RegionSelectorModal() {
 
 export function RegionSwitcher() {
   const router = useRouter();
-  const { region, hasHydrated, setRegion, clearRegion } = useRegionStore();
+  const pathname = usePathname();
+  const { region, hasHydrated, setRegion } = useRegionStore();
 
   if (!hasHydrated) {
     return <div className="h-9 w-24 rounded-lg border border-border animate-pulse bg-muted/40" />;
@@ -96,21 +103,22 @@ export function RegionSwitcher() {
 
   const activeRegion = region || "USA";
 
-  const toggleRegion = () => {
-    const next: RegionCode = activeRegion === "USA" ? "UK" : "USA";
+  const handleSwitch = (next: RegionCode) => {
+    if (activeRegion === next) return;
     setRegion(next);
+    if (pathname === "/products") {
+      const params = new URLSearchParams(window.location.search);
+      params.set("region", next);
+      params.set("page", "1");
+      router.push(`/products?${params.toString()}`);
+    }
     router.refresh();
   };
 
   return (
     <div className="flex items-center gap-1 rounded-lg border border-border bg-muted/40 p-1">
       <button
-        onClick={() => {
-          if (activeRegion !== "USA") {
-            setRegion("USA");
-            router.refresh();
-          }
-        }}
+        onClick={() => handleSwitch("USA")}
         className={`flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-bold transition-all ${
           activeRegion === "USA"
             ? "bg-indigo-600 text-white shadow-sm"
@@ -122,12 +130,7 @@ export function RegionSwitcher() {
         <span>USA</span>
       </button>
       <button
-        onClick={() => {
-          if (activeRegion !== "UK") {
-            setRegion("UK");
-            router.refresh();
-          }
-        }}
+        onClick={() => handleSwitch("UK")}
         className={`flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-bold transition-all ${
           activeRegion === "UK"
             ? "bg-indigo-600 text-white shadow-sm"

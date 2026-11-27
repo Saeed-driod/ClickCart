@@ -1,8 +1,6 @@
-import Link from "next/link";
 import { cookies } from "next/headers";
-import { ArrowRight, ShoppingBag } from "lucide-react";
 import { getProducts, getCategories } from "@/lib/db";
-import { ProductCard } from "@/components/product-card";
+import { HomeRegionView } from "@/components/home-region-view";
 
 export const dynamic = "force-dynamic";
 
@@ -16,79 +14,12 @@ export default async function HomePage() {
     getProducts({ region: activeRegion, limit: 12 }),
   ]);
 
-  const isUK = activeRegion === "UK";
-
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
-      {/* Clean & Simple Region Welcome Banner */}
-      <section className="rounded-2xl border border-border bg-card p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-        <div className="space-y-2">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 text-xs font-bold">
-            <span>{isUK ? "🇬🇧 United Kingdom Store" : "🇺🇸 United States Store"}</span>
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-black text-foreground tracking-tight">
-            {isUK ? "Shop ClickCart UK" : "Shop ClickCart USA"}
-          </h1>
-          <p className="text-sm text-muted-foreground max-w-xl">
-            Simple, fast online shopping. Showing {productsResult.total} products available in{" "}
-            <strong>{isUK ? "the UK" : "the USA"}</strong>.
-          </p>
-        </div>
-
-        <Link
-          href="/products"
-          className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-indigo-600 text-white text-sm font-bold hover:bg-indigo-700 transition-colors shrink-0"
-        >
-          <ShoppingBag className="h-4 w-4" />
-          <span>Browse All Products</span>
-        </Link>
-      </section>
-
-      {/* Simple Category Pills */}
-      <section className="space-y-3">
-        <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
-          Categories
-        </h2>
-        <div className="flex flex-wrap gap-2">
-          <Link
-            href="/products"
-            className="px-4 py-2 rounded-full bg-indigo-600 text-white text-xs font-bold hover:bg-indigo-700 transition-colors"
-          >
-            All ({productsResult.total})
-          </Link>
-          {categories.map((cat) => (
-            <Link
-              key={cat.id}
-              href={`/products?category=${cat.slug}`}
-              className="px-4 py-2 rounded-full border border-border bg-card text-xs font-semibold text-foreground hover:border-indigo-600 hover:text-indigo-600 transition-colors"
-            >
-              {cat.name}
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      {/* Region Products Grid */}
-      <section className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xl sm:text-2xl font-black text-foreground">
-            {isUK ? "🇬🇧 UK Products" : "🇺🇸 USA Products"}
-          </h2>
-          <Link
-            href="/products"
-            className="flex items-center gap-1 text-xs sm:text-sm font-semibold text-indigo-600 dark:text-indigo-400 hover:underline"
-          >
-            <span>See all {productsResult.total} products</span>
-            <ArrowRight className="h-4 w-4" />
-          </Link>
-        </div>
-
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-          {productsResult.products.map((product, idx) => (
-            <ProductCard key={product.id} product={product} priority={idx < 4} />
-          ))}
-        </div>
-      </section>
-    </div>
+    <HomeRegionView
+      initialRegion={activeRegion}
+      initialProducts={productsResult.products}
+      initialTotal={productsResult.total}
+      categories={categories}
+    />
   );
 }

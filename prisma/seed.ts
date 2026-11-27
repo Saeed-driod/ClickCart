@@ -21,11 +21,11 @@ async function main() {
       data: {
         storeName: "ClickCart",
         storeEmail: "support@clickcart.com",
-        storePhone: "+92 300 1234567",
-        address: "ClickCart HQ, Blue Area, Islamabad, Pakistan",
-        currency: "PKR",
-        shippingFee: 200,
-        freeShippingThreshold: 3000,
+        storePhone: "+1 (800) 555-0199",
+        address: "ClickCart HQ, New York, USA & London, UK",
+        currency: "USD",
+        shippingFee: 5,
+        freeShippingThreshold: 50,
       },
     });
   } else {
@@ -33,11 +33,11 @@ async function main() {
       data: {
         storeName: "ClickCart",
         storeEmail: "support@clickcart.com",
-        storePhone: "+92 300 1234567",
-        address: "ClickCart HQ, Blue Area, Islamabad, Pakistan",
-        currency: "PKR",
-        shippingFee: 200,
-        freeShippingThreshold: 3000,
+        storePhone: "+1 (800) 555-0199",
+        address: "ClickCart HQ, New York, USA & London, UK",
+        currency: "USD",
+        shippingFee: 5,
+        freeShippingThreshold: 50,
       },
     });
   }
@@ -123,8 +123,24 @@ async function main() {
     brandMap[brand.slug] = dbBrand.id;
   }
 
-  // 5. Seed 200+ Products
-  console.log(`-> Seeding ${SEED_PRODUCTS.length} Products into MongoDB...`);
+  // 5. Clean up any legacy/old products not in current USA/UK catalogs
+  const validSlugs = SEED_PRODUCTS.map((p) => p.slug);
+  const oldProducts = await prisma.product.findMany({
+    where: { slug: { notIn: validSlugs } },
+    select: { id: true },
+  });
+  if (oldProducts.length > 0) {
+    const oldIds = oldProducts.map((op) => op.id);
+    await prisma.orderItem.deleteMany({ where: { productId: { in: oldIds } } });
+    await prisma.cartItem.deleteMany({ where: { productId: { in: oldIds } } });
+    await prisma.wishlistItem.deleteMany({ where: { productId: { in: oldIds } } });
+    await prisma.review.deleteMany({ where: { productId: { in: oldIds } } });
+    await prisma.product.deleteMany({ where: { id: { in: oldIds } } });
+    console.log(`-> Removed ${oldProducts.length} old/legacy products.`);
+  }
+
+  // 6. Seed Region-Specific USA & UK Products
+  console.log(`-> Seeding ${SEED_PRODUCTS.length} Region-Specific Products (USA & UK) into MongoDB...`);
   const seededProducts = [];
   for (const p of SEED_PRODUCTS) {
     const targetCategoryId = categoryMap[p.categoryId] || Object.values(categoryMap)[0];
@@ -171,8 +187,11 @@ async function main() {
     seededProducts.push(dbProd);
   }
 
-  // 6. Seed Coupons
+  // 6. Seed Coupons (and remove legacy FLAT500)
   console.log("-> Seeding Coupons...");
+  await prisma.coupon.deleteMany({
+    where: { code: "FLAT500" },
+  });
   for (const c of SEED_COUPONS) {
     await prisma.coupon.upsert({
       where: { code: c.code },
@@ -222,9 +241,9 @@ async function main() {
         paymentStatus: "PENDING",
         orderStatus: "PROCESSING",
         subtotal: sampleProduct1.price + sampleProduct2.price,
-        discountAmount: 500,
+        discountAmount: 10,
         shippingFee: 0,
-        totalAmount: sampleProduct1.price + sampleProduct2.price - 500,
+        totalAmount: Number((sampleProduct1.price + sampleProduct2.price - 10).toFixed(2)),
         couponCode: "WELCOME10",
         trackingNumber: "TCS-9018274",
         trackingNotes: "Package processed at sorting hub.",
@@ -253,12 +272,14 @@ async function main() {
   }
 
   const finalProductCount = await prisma.product.count();
+  const usaCount = await prisma.product.count({ where: { region: "USA" } });
+  const ukCount = await prisma.product.count({ where: { region: "UK" } });
   const finalCategoryCount = await prisma.category.count();
   const finalBrandCount = await prisma.brand.count();
 
   console.log(`✅ MongoDB Atlas successfully seeded!`);
   console.log(`📊 Statistics:`);
-  console.log(`   - Products Count: ${finalProductCount}`);
+  console.log(`   - Total Products: ${finalProductCount} (USA: ${usaCount}, UK: ${ukCount})`);
   console.log(`   - Categories Count: ${finalCategoryCount}`);
   console.log(`   - Brands Count: ${finalBrandCount}`);
   console.log(`🔑 Credentials:`);

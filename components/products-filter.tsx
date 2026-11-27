@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { SlidersHorizontal, X, Check, Star } from "lucide-react";
 import { CategoryItem, BrandItem } from "@/types";
 import { Button } from "@/components/ui/button";
+import { useRegionStore } from "@/stores/region-store";
 
 interface ProductsFilterProps {
   categories: CategoryItem[];
@@ -14,6 +15,8 @@ interface ProductsFilterProps {
 export function ProductsFilter({ categories, brands }: ProductsFilterProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const storeRegion = useRegionStore((s) => s.region);
+  const activeRegion = searchParams.get("region") || storeRegion || "USA";
 
   const selectedCategory = searchParams.get("category") || "";
   const selectedBrand = searchParams.get("brand") || "";
@@ -28,6 +31,7 @@ export function ProductsFilter({ categories, brands }: ProductsFilterProps) {
 
   const updateParam = (key: string, value: string | null) => {
     const params = new URLSearchParams(searchParams.toString());
+    params.set("region", activeRegion);
     params.set("page", "1"); // Reset to page 1 on filter change
     if (value) {
       params.set(key, value);
@@ -40,6 +44,7 @@ export function ProductsFilter({ categories, brands }: ProductsFilterProps) {
   const applyPriceFilter = (e: React.FormEvent) => {
     e.preventDefault();
     const params = new URLSearchParams(searchParams.toString());
+    params.set("region", activeRegion);
     params.set("page", "1");
     if (localMinPrice) params.set("minPrice", localMinPrice);
     else params.delete("minPrice");
@@ -51,7 +56,7 @@ export function ProductsFilter({ categories, brands }: ProductsFilterProps) {
   const clearAllFilters = () => {
     setLocalMinPrice("");
     setLocalMaxPrice("");
-    router.push("/products");
+    router.push(`/products?region=${activeRegion}`);
   };
 
   const hasActiveFilters =
@@ -122,7 +127,7 @@ export function ProductsFilter({ categories, brands }: ProductsFilterProps) {
       {/* Price Range Filter */}
       <div className="space-y-2.5">
         <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-          Price (PKR ₨)
+          Price ({activeRegion === "UK" ? "GBP £" : "USD $"})
         </h4>
         <form onSubmit={applyPriceFilter} className="space-y-2">
           <div className="flex items-center gap-2">

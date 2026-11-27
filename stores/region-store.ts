@@ -12,6 +12,13 @@ interface RegionStore {
   clearRegion: () => void;
 }
 
+function syncRegionCookieAndCurrency(region: RegionCode) {
+  if (typeof document !== "undefined") {
+    document.cookie = `clickcart_region=${region}; path=/; max-age=31536000; SameSite=Lax`;
+  }
+  useCurrencyStore.getState().setCurrency(region === "USA" ? "USD" : "GBP");
+}
+
 export const useRegionStore = create<RegionStore>()(
   persist(
     (set) => ({
@@ -19,10 +26,7 @@ export const useRegionStore = create<RegionStore>()(
       hasHydrated: false,
       setHasHydrated: (state) => set({ hasHydrated: state }),
       setRegion: (region) => {
-        if (typeof document !== "undefined") {
-          document.cookie = `clickcart_region=${region}; path=/; max-age=31536000; SameSite=Lax`;
-        }
-        useCurrencyStore.getState().setCurrency(region === "USA" ? "USD" : "GBP");
+        syncRegionCookieAndCurrency(region);
         set({ region });
       },
       clearRegion: () => {
@@ -36,6 +40,9 @@ export const useRegionStore = create<RegionStore>()(
       name: "clickcart-region-storage",
       storage: createJSONStorage(() => localStorage),
       onRehydrateStorage: () => (state) => {
+        if (state?.region) {
+          syncRegionCookieAndCurrency(state.region);
+        }
         state?.setHasHydrated(true);
       },
     }

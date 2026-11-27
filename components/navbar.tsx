@@ -23,15 +23,15 @@ import { RegionSwitcher } from "@/components/region-selector-modal";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 const NAV_CATEGORIES = [
-  { name: "All Products", href: "/products" },
-  { name: "Electronics", href: "/products?category=electronics" },
-  { name: "Fashion", href: "/products?category=fashion" },
-  { name: "Home & Kitchen", href: "/products?category=home-kitchen" },
-  { name: "Beauty", href: "/products?category=beauty" },
-  { name: "Sports", href: "/products?category=sports" },
-  { name: "Toys", href: "/products?category=toys" },
-  { name: "Books", href: "/products?category=books" },
-  { name: "Groceries", href: "/products?category=groceries" },
+  { name: "All Products", slug: "" },
+  { name: "Electronics", slug: "electronics" },
+  { name: "Fashion", slug: "fashion" },
+  { name: "Home & Kitchen", slug: "home-kitchen" },
+  { name: "Beauty", slug: "beauty" },
+  { name: "Sports", slug: "sports" },
+  { name: "Toys", slug: "toys" },
+  { name: "Books", slug: "books" },
+  { name: "Groceries", slug: "groceries" },
 ];
 
 export function Navbar() {
@@ -41,6 +41,7 @@ export function Navbar() {
   const totalCartItems = useCartStore((state) => state.getTotalItems());
   const wishlistItems = useWishlistStore((state) => state.items);
   const region = useRegionStore((state) => state.region);
+  const activeRegion = region || "USA";
 
   const [searchQuery, setSearchQuery] = React.useState("");
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
@@ -56,10 +57,13 @@ export function Navbar() {
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      router.push(`/products?search=${encodeURIComponent(searchQuery.trim())}`);
+      router.push(`/products?region=${activeRegion}&search=${encodeURIComponent(searchQuery.trim())}`);
       setMobileMenuOpen(false);
     }
   };
+
+  const getCategoryHref = (slug: string) =>
+    slug ? `/products?region=${activeRegion}&category=${slug}` : `/products?region=${activeRegion}`;
 
   const isAdmin = (session?.user as any)?.role === "ADMIN";
 
@@ -220,7 +224,7 @@ export function Navbar() {
           {NAV_CATEGORIES.map((cat) => (
             <Link
               key={cat.name}
-              href={cat.href}
+              href={getCategoryHref(cat.slug)}
               className="hover:text-indigo-600 whitespace-nowrap transition-colors"
             >
               {cat.name}
@@ -247,7 +251,7 @@ export function Navbar() {
             {NAV_CATEGORIES.map((cat) => (
               <Link
                 key={cat.name}
-                href={cat.href}
+                href={getCategoryHref(cat.slug)}
                 onClick={() => setMobileMenuOpen(false)}
                 className="px-3 py-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground font-medium"
               >

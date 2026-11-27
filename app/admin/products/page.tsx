@@ -26,6 +26,7 @@ export default function AdminProductsPage() {
 
   const [search, setSearch] = React.useState("");
   const [selectedCategory, setSelectedCategory] = React.useState("ALL");
+  const [selectedRegionTab, setSelectedRegionTab] = React.useState<"ALL" | "USA" | "UK">("ALL");
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = React.useState(false);
@@ -76,14 +77,15 @@ export default function AdminProductsPage() {
   };
 
   const handleOpenAdd = () => {
+    const defaultRegion = selectedRegionTab === "UK" ? "UK" : "USA";
     setEditingProduct(null);
     setFormName("");
-    setFormPrice("4500");
+    setFormPrice("49.99");
     setFormSalePrice("");
     setFormStock("20");
-    setFormSku(`CKC-PROD-${Math.floor(1000 + Math.random() * 9000)}`);
+    setFormSku(`${defaultRegion}-PROD-${Math.floor(1000 + Math.random() * 9000)}`);
     setFormCategory(categories[0]?.id || "");
-    setFormRegion("USA");
+    setFormRegion(defaultRegion);
     setFormDescription("Premium high-quality retail product with verified manufacturer warranty.");
     setFormImages([]);
     setUrlInput("");
@@ -260,6 +262,9 @@ export default function AdminProductsPage() {
   };
 
   // Filtered view
+  const usaCount = products.filter((p) => p.region !== "UK").length;
+  const ukCount = products.filter((p) => p.region === "UK").length;
+
   const filteredProducts = products.filter((p) => {
     const matchesSearch =
       p.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -268,7 +273,10 @@ export default function AdminProductsPage() {
       selectedCategory === "ALL" ||
       p.categoryId === selectedCategory ||
       p.category?.slug === selectedCategory;
-    return matchesSearch && matchesCat;
+    const matchesRegion =
+      selectedRegionTab === "ALL" ||
+      (selectedRegionTab === "UK" ? p.region === "UK" : p.region !== "UK");
+    return matchesSearch && matchesCat && matchesRegion;
   });
 
   return (
@@ -277,13 +285,47 @@ export default function AdminProductsPage() {
         <div>
           <h1 className="text-2xl font-black text-foreground">Products Inventory</h1>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Upload new products with images, manage stock, pricing, and regions.
+            Upload new products with images, manage stock, pricing, and separate USA / UK catalogs.
           </p>
         </div>
         <Button onClick={handleOpenAdd} className="gap-2">
           <Plus className="h-4 w-4" />
-          <span>Add New Product</span>
+          <span>Add New {selectedRegionTab === "UK" ? "UK" : selectedRegionTab === "USA" ? "USA" : ""} Product</span>
         </Button>
+      </div>
+
+      {/* Region Tabs: All | USA | UK */}
+      <div className="flex flex-wrap gap-2 border-b border-border pb-3">
+        <button
+          onClick={() => setSelectedRegionTab("ALL")}
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+            selectedRegionTab === "ALL"
+              ? "bg-indigo-600 text-white shadow-sm"
+              : "bg-card border border-border text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          All Regions ({products.length})
+        </button>
+        <button
+          onClick={() => setSelectedRegionTab("USA")}
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+            selectedRegionTab === "USA"
+              ? "bg-indigo-600 text-white shadow-sm"
+              : "bg-card border border-border text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          🇺🇸 USA Products ({usaCount})
+        </button>
+        <button
+          onClick={() => setSelectedRegionTab("UK")}
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+            selectedRegionTab === "UK"
+              ? "bg-indigo-600 text-white shadow-sm"
+              : "bg-card border border-border text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          🇬🇧 UK Products ({ukCount})
+        </button>
       </div>
 
       {/* Filter / Search Bar */}
@@ -426,11 +468,10 @@ export default function AdminProductsPage() {
                       <td className="p-3">
                         <button
                           onClick={() => handleToggleActive(p.id)}
-                          className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                            p.isActive
-                              ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300"
-                              : "bg-muted text-muted-foreground"
-                          }`}
+                          className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${p.isActive
+                            ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300"
+                            : "bg-muted text-muted-foreground"
+                            }`}
                         >
                           {p.isActive ? "Active" : "Inactive"}
                         </button>

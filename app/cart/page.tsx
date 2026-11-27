@@ -42,7 +42,7 @@ export default function CartPage() {
   const [isApplyingCoupon, setIsApplyingCoupon] = React.useState(false);
 
   const subtotal = getSubtotal();
-  const shippingFee = subtotal >= 3000 || items.length === 0 ? 0 : 200;
+  const shippingFee = subtotal >= 50 || items.length === 0 ? 0 : 5;
   const grandTotal = getTotal(shippingFee);
 
   const handleApplyCoupon = async (e: React.FormEvent) => {
@@ -66,30 +66,29 @@ export default function CartPage() {
         toast.error(data.message || "Invalid coupon code");
       }
     } catch (e) {
-      // Local fallback coupon validation
       const code = couponInput.trim().toUpperCase();
       if (code === "WELCOME10") {
-        if (subtotal < 2000) {
-          toast.error("Minimum order for WELCOME10 is ₨ 2,000");
+        if (subtotal < 20) {
+          toast.error(`Minimum order for WELCOME10 is ${formatMoney(20, currency)}`);
         } else {
-          const disc = Math.min(Math.round(subtotal * 0.1), 1500);
-          applyCoupon({ id: "1", code: "WELCOME10", discountType: "PERCENTAGE", discountValue: 10, minOrderAmount: 2000, expiryDate: new Date(), usedCount: 0, isActive: true }, disc);
+          const disc = Math.min(Number((subtotal * 0.1).toFixed(2)), 50);
+          applyCoupon({ id: "1", code: "WELCOME10", discountType: "PERCENTAGE", discountValue: 10, minOrderAmount: 20, expiryDate: new Date(), usedCount: 0, isActive: true }, disc);
           toast.success("Coupon WELCOME10 applied (10% off)!");
         }
       } else if (code === "CLICK20") {
-        if (subtotal < 5000) {
-          toast.error("Minimum order for CLICK20 is ₨ 5,000");
+        if (subtotal < 60) {
+          toast.error(`Minimum order for CLICK20 is ${formatMoney(60, currency)}`);
         } else {
-          const disc = Math.min(Math.round(subtotal * 0.2), 3000);
-          applyCoupon({ id: "2", code: "CLICK20", discountType: "PERCENTAGE", discountValue: 20, minOrderAmount: 5000, expiryDate: new Date(), usedCount: 0, isActive: true }, disc);
+          const disc = Math.min(Number((subtotal * 0.2).toFixed(2)), 100);
+          applyCoupon({ id: "2", code: "CLICK20", discountType: "PERCENTAGE", discountValue: 20, minOrderAmount: 60, expiryDate: new Date(), usedCount: 0, isActive: true }, disc);
           toast.success("Coupon CLICK20 applied (20% off)!");
         }
-      } else if (code === "FLAT500") {
-        if (subtotal < 3500) {
-          toast.error("Minimum order for FLAT500 is ₨ 3,500");
+      } else if (code === "FLAT10") {
+        if (subtotal < 40) {
+          toast.error(`Minimum order for FLAT10 is ${formatMoney(40, currency)}`);
         } else {
-          applyCoupon({ id: "3", code: "FLAT500", discountType: "FIXED", discountValue: 500, minOrderAmount: 3500, expiryDate: new Date(), usedCount: 0, isActive: true }, 500);
-          toast.success("Coupon FLAT500 applied (₨ 500 off)!");
+          applyCoupon({ id: "3", code: "FLAT10", discountType: "FIXED", discountValue: 10, minOrderAmount: 40, expiryDate: new Date(), usedCount: 0, isActive: true }, 10);
+          toast.success(`Coupon FLAT10 applied (${formatMoney(10, currency)} off)!`);
         }
       } else {
         toast.error("Invalid coupon code. Try WELCOME10 or CLICK20");
@@ -228,13 +227,13 @@ export default function CartPage() {
           <div className="p-4 rounded-xl bg-indigo-50/60 dark:bg-indigo-950/30 border border-indigo-100 dark:border-indigo-900 text-xs text-indigo-900 dark:text-indigo-200 flex items-center gap-2">
             <ShieldCheck className="h-4 w-4 text-indigo-600 shrink-0" />
             <span>
-              {subtotal >= 3000 ? (
+              {subtotal >= 50 ? (
                 <strong className="text-emerald-600 dark:text-emerald-400">
-                  🎉 Congratulations! Your order qualifies for FREE Express Delivery across Pakistan!
+                  🎉 Your order qualifies for FREE Express Delivery!
                 </strong>
               ) : (
                 <span>
-                  Add <strong>{formatMoney(3000 - subtotal, currency)}</strong> more to your cart to get <strong>FREE Delivery</strong>!
+                  Add <strong>{formatMoney(50 - subtotal, currency)}</strong> more to your cart to get <strong>FREE Delivery</strong>!
                 </span>
               )}
             </span>

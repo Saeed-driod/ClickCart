@@ -7,24 +7,36 @@ import { useSession } from "next-auth/react";
 import { ShieldCheck, Truck, ArrowLeft, CheckCircle2 } from "lucide-react";
 import { useCartStore } from "@/stores/cart-store";
 import { useCurrencyStore } from "@/stores/currency-store";
+import { useRegionStore } from "@/stores/region-store";
 import { formatMoney } from "@/lib/currency";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 
-const PAKISTAN_CITIES = [
-  "Islamabad",
-  "Karachi",
-  "Lahore",
-  "Rawalpindi",
-  "Faisalabad",
-  "Multan",
-  "Peshawar",
-  "Quetta",
-  "Sialkot",
-  "Gujranwala",
-  "Hyderabad",
-  "Abbottabad",
+const USA_CITIES = [
+  "New York, NY",
+  "Los Angeles, CA",
+  "Chicago, IL",
+  "Houston, TX",
+  "Phoenix, AZ",
+  "Miami, FL",
+  "Seattle, WA",
+  "Boston, MA",
+  "Austin, TX",
+  "Denver, CO",
+];
+
+const UK_CITIES = [
+  "London",
+  "Manchester",
+  "Birmingham",
+  "Leeds",
+  "Glasgow",
+  "Liverpool",
+  "Bristol",
+  "Edinburgh",
+  "Sheffield",
+  "Oxford",
 ];
 
 export default function CheckoutPage() {
@@ -33,17 +45,26 @@ export default function CheckoutPage() {
   const { items, getSubtotal, getTotal, discountAmount, appliedCoupon, clearCart } =
     useCartStore();
   const { currency } = useCurrencyStore();
+  const region = useRegionStore((s) => s.region) || "USA";
+  const isUK = region === "UK";
+  const citiesList = isUK ? UK_CITIES : USA_CITIES;
 
   const [fullName, setFullName] = React.useState(session?.user?.name || "");
   const [email, setEmail] = React.useState(session?.user?.email || "");
-  const [phone, setPhone] = React.useState("+92 3");
+  const [phone, setPhone] = React.useState(isUK ? "+44 " : "+1 ");
   const [street, setStreet] = React.useState("");
-  const [city, setCity] = React.useState("Islamabad");
-  const [postalCode, setPostalCode] = React.useState("44000");
+  const [city, setCity] = React.useState(citiesList[0]);
+  const [postalCode, setPostalCode] = React.useState(isUK ? "SW1A 1AA" : "10001");
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
+  React.useEffect(() => {
+    setCity(isUK ? UK_CITIES[0] : USA_CITIES[0]);
+    setPostalCode(isUK ? "SW1A 1AA" : "10001");
+    setPhone(isUK ? "+44 " : "+1 ");
+  }, [isUK]);
+
   const subtotal = getSubtotal();
-  const shippingFee = subtotal >= 3000 ? 0 : 200;
+  const shippingFee = subtotal >= 50 ? 0 : 5;
   const grandTotal = getTotal(shippingFee);
 
   React.useEffect(() => {
@@ -74,7 +95,7 @@ export default function CheckoutPage() {
       customerName: fullName.trim(),
       customerEmail: email.trim(),
       customerPhone: phone.trim(),
-      shippingAddress: `${street.trim()}, ${city}, Pakistan (Postal: ${postalCode.trim()})`,
+      shippingAddress: `${street.trim()}, ${city}, ${isUK ? "United Kingdom" : "United States"} (${isUK ? "Postcode" : "ZIP"}: ${postalCode.trim()})`,
       paymentMethod: "COD",
       paymentStatus: "PENDING",
       subtotal,
@@ -143,9 +164,11 @@ export default function CheckoutPage() {
         <div className="lg:col-span-7 space-y-6">
           <div className="p-6 rounded-2xl border border-border bg-card space-y-6">
             <div>
-              <h2 className="text-xl font-black text-foreground">Delivery & Shipping Address</h2>
+              <h2 className="text-xl font-black text-foreground">
+                {isUK ? "🇬🇧 UK Shipping Address" : "🇺🇸 USA Shipping Address"}
+              </h2>
               <p className="text-xs text-muted-foreground mt-0.5">
-                We deliver to all cities, towns, and postal codes across Pakistan.
+                Fast doorstep delivery across {isUK ? "the United Kingdom" : "the United States"}.
               </p>
             </div>
 
@@ -197,7 +220,7 @@ export default function CheckoutPage() {
                     onChange={(e) => setCity(e.target.value)}
                     className="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
                   >
-                    {PAKISTAN_CITIES.map((c) => (
+                    {citiesList.map((c) => (
                       <option key={c} value={c}>
                         {c}
                       </option>

@@ -90,10 +90,10 @@ export const useCartStore = create<CartStore>()(
         return get().items.reduce((acc, item) => acc + item.quantity, 0);
       },
 
-      getTotal: (shippingFee = 200) => {
+      getTotal: (shippingFee = 5) => {
         const subtotal = get().getSubtotal();
         const discount = get().discountAmount;
-        const fee = subtotal >= 3000 ? 0 : shippingFee;
+        const fee = subtotal >= 50 ? 0 : shippingFee;
         return Math.max(0, subtotal - discount + fee);
       },
     }),
