@@ -10,45 +10,49 @@ export default function AdminCustomersPage() {
   const [customers, setCustomers] = React.useState([
     {
       id: "cust-1",
-      name: "Ayesha Khan",
-      email: "ayesha.khan@example.com",
-      phone: "+92 301 5551234",
-      city: "Islamabad",
+      name: "Emily Carter",
+      email: "emily.carter@example.com",
+      phone: "+1 555 234 5678",
+      city: "New York, NY",
+      region: "USA",
       totalOrders: 4,
-      totalSpend: 48500,
+      totalSpend: 285.0,
       isActive: true,
       registeredAt: "Oct 14, 2026",
     },
     {
       id: "cust-2",
-      name: "Bilal Tariq",
-      email: "bilal.t@example.com",
-      phone: "+92 321 4448899",
-      city: "Lahore",
+      name: "James Whitfield",
+      email: "james.w@example.com",
+      phone: "+1 555 876 4321",
+      city: "Los Angeles, CA",
+      region: "USA",
       totalOrders: 6,
-      totalSpend: 82000,
+      totalSpend: 512.5,
       isActive: true,
       registeredAt: "Sep 28, 2026",
     },
     {
       id: "cust-3",
-      name: "Zainab Malik",
-      email: "zainab.m@example.com",
-      phone: "+92 333 1122334",
-      city: "Karachi",
+      name: "Sophie Greenwood",
+      email: "sophie.g@example.com",
+      phone: "+44 7700 900234",
+      city: "London",
+      region: "UK",
       totalOrders: 2,
-      totalSpend: 19500,
+      totalSpend: 139.98,
       isActive: true,
       registeredAt: "Nov 02, 2026",
     },
     {
       id: "cust-4",
-      name: "Hamza Siddiqui",
-      email: "hamza.s@example.com",
-      phone: "+92 345 9988776",
-      city: "Rawalpindi",
+      name: "Oliver Bennett",
+      email: "oliver.b@example.com",
+      phone: "+44 7911 123456",
+      city: "Manchester",
+      region: "UK",
       totalOrders: 1,
-      totalSpend: 9500,
+      totalSpend: 59.99,
       isActive: false,
       registeredAt: "Nov 15, 2026",
     },
@@ -94,7 +98,8 @@ export default function AdminCustomersPage() {
             <thead className="bg-muted/40 border-b border-border text-muted-foreground font-semibold">
               <tr>
                 <th className="p-3">Customer</th>
-                <th className="p-3">Phone & City</th>
+                <th className="p-3">Phone &amp; City</th>
+                <th className="p-3">Region</th>
                 <th className="p-3">Orders Placed</th>
                 <th className="p-3">Total Spend</th>
                 <th className="p-3">Status</th>
@@ -110,7 +115,12 @@ export default function AdminCustomersPage() {
                   </td>
                   <td className="p-3">
                     <span className="text-foreground block">{c.phone}</span>
-                    <span className="text-[10px] text-muted-foreground">{c.city}, Pakistan</span>
+                    <span className="text-[10px] text-muted-foreground">{c.city}</span>
+                  </td>
+                  <td className="p-3">
+                    <span className="font-semibold text-foreground">
+                      {c.region === "USA" ? "🇺🇸 USA" : "🇬🇧 UK"}
+                    </span>
                   </td>
                   <td className="p-3 font-semibold text-foreground">{c.totalOrders} Orders</td>
                   <td className="p-3 font-bold text-foreground">{formatMoney(c.totalSpend)}</td>

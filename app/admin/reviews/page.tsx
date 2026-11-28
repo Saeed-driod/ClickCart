@@ -9,28 +9,31 @@ export default function AdminReviewsPage() {
   const [reviews, setReviews] = React.useState([
     {
       id: "rev-1",
-      customerName: "Farhan Ahmed",
+      customerName: "Emily Carter",
       productName: "Pro Wireless Noise-Cancelling Headphones",
       rating: 5,
-      comment: "Outstanding build quality and exceeded my expectations! Arrived in Karachi within 48 hours via COD.",
+      comment:
+        "Outstanding build quality and exceeded my expectations! Arrived in New York within 2 days. Absolutely love ClickCart.",
       status: "APPROVED",
       date: "Nov 12, 2026",
     },
     {
       id: "rev-2",
-      customerName: "Zainab Malik",
+      customerName: "Sophie Greenwood",
       productName: "Classic Slim-Fit Oxford Cotton Shirt",
       rating: 4,
-      comment: "Very genuine product. Packaging was securely padded. Will definitely buy again from ClickCart.",
+      comment:
+        "Very genuine product. Packaging was securely padded and delivery to London was fast. Will definitely buy again.",
       status: "APPROVED",
       date: "Nov 05, 2026",
     },
     {
       id: "rev-3",
-      customerName: "Imran Qureshi",
+      customerName: "James Whitfield",
       productName: "Digital Air Fryer XL 6L with Touch Preset",
       rating: 5,
-      comment: "Amazing kitchen appliance! Reduced oil consumption by 90% and crisp food every time.",
+      comment:
+        "Amazing kitchen appliance! Reduced oil consumption by 90% and crispy food every time. Great value for money.",
       status: "PENDING",
       date: "Nov 20, 2026",
     },
