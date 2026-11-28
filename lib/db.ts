@@ -389,7 +389,7 @@ export async function createOrder(orderData: Partial<OrderType>): Promise<OrderT
     userId: orderData.userId || null,
     customerName: orderData.customerName || "Customer",
     customerEmail: orderData.customerEmail || "customer@example.com",
-    customerPhone: orderData.customerPhone || "+92 300 0000000",
+    customerPhone: orderData.customerPhone || "+1 (555) 000-0000",
     shippingAddress: orderData.shippingAddress || "",
     paymentMethod: orderData.paymentMethod || "COD",
     paymentStatus: orderData.paymentStatus || "PENDING",
@@ -429,37 +429,52 @@ export async function createOrder(orderData: Partial<OrderType>): Promise<OrderT
         })
       );
 
-      const dbOrder = await prisma.order.create({
-        data: {
-          orderNumber: newOrder.orderNumber,
-          userId: newOrder.userId && /^[0-9a-fA-F]{24}$/.test(newOrder.userId) ? newOrder.userId : null,
-          customerName: newOrder.customerName,
-          customerEmail: newOrder.customerEmail,
-          customerPhone: newOrder.customerPhone,
-          shippingAddress: newOrder.shippingAddress,
-          paymentMethod: newOrder.paymentMethod,
-          paymentStatus: newOrder.paymentStatus,
-          orderStatus: newOrder.orderStatus,
-          subtotal: newOrder.subtotal,
-          discountAmount: newOrder.discountAmount,
-          shippingFee: newOrder.shippingFee,
-          totalAmount: newOrder.totalAmount,
-          couponCode: newOrder.couponCode,
-          trackingNumber: newOrder.trackingNumber,
-          trackingNotes: newOrder.trackingNotes,
-          items: {
-            create: preparedItems,
+      const [dbOrder] = await prisma.$transaction([
+        prisma.order.create({
+          data: {
+            orderNumber: newOrder.orderNumber,
+            userId: newOrder.userId && /^[0-9a-fA-F]{24}$/.test(newOrder.userId) ? newOrder.userId : null,
+            customerName: newOrder.customerName,
+            customerEmail: newOrder.customerEmail,
+            customerPhone: newOrder.customerPhone,
+            shippingAddress: newOrder.shippingAddress,
+            paymentMethod: newOrder.paymentMethod,
+            paymentStatus: newOrder.paymentStatus,
+            orderStatus: newOrder.orderStatus,
+            subtotal: newOrder.subtotal,
+            discountAmount: newOrder.discountAmount,
+            shippingFee: newOrder.shippingFee,
+            totalAmount: newOrder.totalAmount,
+            couponCode: newOrder.couponCode,
+            trackingNumber: newOrder.trackingNumber,
+            trackingNotes: newOrder.trackingNotes,
+            items: {
+              create: preparedItems,
+            },
           },
-        },
-        include: { items: true },
-      });
+          include: { items: true },
+        }),
+        ...preparedItems.map((item) =>
+          prisma.product.update({
+            where: { id: item.productId },
+            data: { stock: { decrement: item.quantity } },
+          })
+        ),
+      ]);
       return dbOrder as unknown as OrderType;
     }
   } catch (e) {
     console.error("Order save fallback:", e);
   }
 
+  // Memory path: decrement stock only after successful order push
   memoryOrders.unshift(newOrder);
+  for (const item of newOrder.items) {
+    const mp = memoryProducts.find((p) => p.id === item.productId || p.name === item.productName);
+    if (mp && typeof mp.stock === "number") {
+      mp.stock = Math.max(0, mp.stock - item.quantity);
+    }
+  }
   return newOrder;
 }
 
