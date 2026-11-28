@@ -183,7 +183,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
               </div>
               <h3 className="text-lg font-bold text-foreground">No products found</h3>
               <p className="text-xs text-muted-foreground max-w-sm mt-1 mb-6">
-                We couldn't find any items matching your selected criteria. Try adjusting or clearing your filters.
+                We couldn&apos;t find any items matching your selected criteria. Try adjusting or clearing your filters.
               </p>
               <Link
                 href="/products"

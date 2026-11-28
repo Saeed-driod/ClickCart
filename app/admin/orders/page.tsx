@@ -26,23 +26,20 @@ export default function AdminOrdersPage() {
   const [selectedOrder, setSelectedOrder] = React.useState<OrderType | null>(null);
 
   React.useEffect(() => {
-    fetchOrders();
-  }, []);
-
-  const fetchOrders = async () => {
-    try {
-      const res = await fetch("/api/orders");
-      if (res.ok) {
-        const data = await res.json();
-        setOrders(data);
-        if (data.length > 0 && !selectedOrder) {
-          setSelectedOrder(data[0]);
+    async function loadOrders() {
+      try {
+        const res = await fetch("/api/orders");
+        if (res.ok) {
+          const data = await res.json();
+          setOrders(data);
+          setSelectedOrder((prev) => prev || (data.length > 0 ? data[0] : null));
         }
+      } catch (e) {
+        console.error(e);
       }
-    } catch (e) {
-      console.error(e);
     }
-  };
+    loadOrders();
+  }, []);
 
   const handleUpdateStatus = async (orderId: string, newStatus: OrderStatus) => {
     try {

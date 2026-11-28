@@ -9,6 +9,7 @@ import { useCartStore } from "@/stores/cart-store";
 import { useCurrencyStore } from "@/stores/currency-store";
 import { useRegionStore } from "@/stores/region-store";
 import { formatMoney } from "@/lib/currency";
+import { calculateShippingFee } from "@/lib/shipping";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -64,13 +65,13 @@ export default function CheckoutPage() {
   }, [isUK]);
 
   const subtotal = getSubtotal();
-  const shippingFee = subtotal >= 50 ? 0 : 5;
+  const shippingFee = calculateShippingFee(subtotal, items.length > 0);
   const grandTotal = getTotal(shippingFee);
 
   React.useEffect(() => {
     if (session?.user) {
-      if (!fullName && session.user.name) setFullName(session.user.name);
-      if (!email && session.user.email) setEmail(session.user.email);
+      if (session.user.name) setFullName((prev) => prev || session.user?.name || "");
+      if (session.user.email) setEmail((prev) => prev || session.user?.email || "");
     }
   }, [session]);
 
@@ -122,16 +123,17 @@ export default function CheckoutPage() {
 
       const order = await response.json();
 
+      if (!response.ok) {
+        toast.error(order?.error || "Order failed, please try again");
+        return;
+      }
+
       clearCart();
       toast.success("Order placed successfully! Redirecting...");
       router.push(`/orders/${order.orderNumber || order.id}`);
     } catch (error) {
       console.error("Order submission error:", error);
-      // Fallback redirect with generated mock number
-      const mockNumber = `ORD-${Math.floor(100000 + Math.random() * 900000)}`;
-      clearCart();
-      toast.success("Order placed successfully!");
-      router.push(`/orders/${mockNumber}`);
+      toast.error("Order failed, please try again");
     } finally {
       setIsSubmitting(false);
     }
@@ -180,7 +182,7 @@ export default function CheckoutPage() {
                   </label>
                   <Input
                     required
-                    placeholder="e.g. Muhammad Ali"
+                    placeholder="e.g. Alex Morgan"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                   />
@@ -202,11 +204,11 @@ export default function CheckoutPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-muted-foreground mb-1">
-                    Mobile Phone Number (WhatsApp / SMS) *
+                    Phone Number *
                   </label>
                   <Input
                     required
-                    placeholder="+92 300 1234567"
+                    placeholder={isUK ? "+44 7700 900123" : "+1 555 123 4567"}
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                   />
@@ -231,12 +233,16 @@ export default function CheckoutPage() {
 
               <div>
                 <label className="block text-xs font-semibold text-muted-foreground mb-1">
-                  Complete Street Address (House/Flat#, Street, Sector/Area) *
+                  Street Address *
                 </label>
                 <textarea
                   required
                   rows={2}
-                  placeholder="e.g. House #12, Street 4, Sector G-11/3, near Main Market"
+                  placeholder={
+                    isUK
+                      ? "e.g. 221B Baker Street, Marylebone"
+                      : "e.g. 742 Evergreen Terrace, Apt 4B"
+                  }
                   value={street}
                   onChange={(e) => setStreet(e.target.value)}
                   className="w-full rounded-lg border border-input bg-background p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -245,7 +251,7 @@ export default function CheckoutPage() {
 
               <div>
                 <label className="block text-xs font-semibold text-muted-foreground mb-1">
-                  Postal Code
+                  {isUK ? "Postcode" : "ZIP Code"}
                 </label>
                 <Input
                   placeholder="44000"

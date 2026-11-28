@@ -9,10 +9,10 @@ import { toast } from "sonner";
 export default function AdminSettingsPage() {
   const [storeName, setStoreName] = React.useState("ClickCart");
   const [storeEmail, setStoreEmail] = React.useState("support@clickcart.com");
-  const [storePhone, setStorePhone] = React.useState("+92 300 1234567");
-  const [address, setAddress] = React.useState("ClickCart HQ, Blue Area, Islamabad, Pakistan");
-  const [shippingFee, setShippingFee] = React.useState("200");
-  const [freeShippingThreshold, setFreeShippingThreshold] = React.useState("3000");
+  const [storePhone, setStorePhone] = React.useState("+1 (800) 555-0199");
+  const [address, setAddress] = React.useState("350 Fifth Avenue, New York, NY 10118, USA");
+  const [shippingFee, setShippingFee] = React.useState("5");
+  const [freeShippingThreshold, setFreeShippingThreshold] = React.useState("50");
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,7 +62,7 @@ export default function AdminSettingsPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-border">
             <div>
               <label className="block font-semibold text-muted-foreground mb-1">
-                Standard Shipping Fee (₨)
+                Standard Shipping Fee ($)
               </label>
               <Input
                 type="number"
@@ -72,7 +72,7 @@ export default function AdminSettingsPage() {
             </div>
             <div>
               <label className="block font-semibold text-muted-foreground mb-1">
-                Free Shipping Threshold (₨)
+                Free Shipping Threshold ($)
               </label>
               <Input
                 type="number"

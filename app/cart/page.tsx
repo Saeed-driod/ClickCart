@@ -18,6 +18,10 @@ import {
 import { useCartStore } from "@/stores/cart-store";
 import { useCurrencyStore } from "@/stores/currency-store";
 import { formatMoney } from "@/lib/currency";
+import {
+  FREE_SHIPPING_THRESHOLD,
+  calculateShippingFee,
+} from "@/lib/shipping";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -42,7 +46,7 @@ export default function CartPage() {
   const [isApplyingCoupon, setIsApplyingCoupon] = React.useState(false);
 
   const subtotal = getSubtotal();
-  const shippingFee = subtotal >= 50 || items.length === 0 ? 0 : 5;
+  const shippingFee = calculateShippingFee(subtotal, items.length > 0);
   const grandTotal = getTotal(shippingFee);
 
   const handleApplyCoupon = async (e: React.FormEvent) => {
@@ -107,7 +111,7 @@ export default function CartPage() {
           </div>
           <h1 className="text-2xl font-black text-foreground">Your Shopping Cart is Empty</h1>
           <p className="text-xs text-muted-foreground">
-            Looks like you haven't added any products to your cart yet. Discover 200+ amazing items waiting for you!
+            Looks like you haven&apos;t added any products to your cart yet. Discover 200+ amazing items waiting for you!
           </p>
           <div className="pt-2">
             <Link
@@ -227,13 +231,13 @@ export default function CartPage() {
           <div className="p-4 rounded-xl bg-indigo-50/60 dark:bg-indigo-950/30 border border-indigo-100 dark:border-indigo-900 text-xs text-indigo-900 dark:text-indigo-200 flex items-center gap-2">
             <ShieldCheck className="h-4 w-4 text-indigo-600 shrink-0" />
             <span>
-              {subtotal >= 50 ? (
+              {subtotal >= FREE_SHIPPING_THRESHOLD ? (
                 <strong className="text-emerald-600 dark:text-emerald-400">
                   🎉 Your order qualifies for FREE Express Delivery!
                 </strong>
               ) : (
                 <span>
-                  Add <strong>{formatMoney(50 - subtotal, currency)}</strong> more to your cart to get <strong>FREE Delivery</strong>!
+                  Add <strong>{formatMoney(FREE_SHIPPING_THRESHOLD - subtotal, currency)}</strong> more to your cart to get <strong>FREE Delivery</strong>!
                 </span>
               )}
             </span>

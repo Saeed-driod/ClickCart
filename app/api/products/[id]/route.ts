@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getProductBySlug } from "@/lib/db";
+import { getProductBySlug, isDatabaseActive } from "@/lib/db";
 import { prisma } from "@/lib/prisma";
 import { requireAdminSession } from "@/lib/auth";
 
@@ -32,8 +32,7 @@ export async function PUT(
     let updated;
 
     try {
-      const dbUrl = process.env.DATABASE_URL || "";
-      if (dbUrl.length > 0 && !dbUrl.includes("placeholder") && !dbUrl.includes("localhost:5432")) {
+      if (isDatabaseActive()) {
         const isMongoId = /^[0-9a-fA-F]{24}$/.test(params.id);
         const where = isMongoId ? { id: params.id } : { slug: params.id };
 
@@ -70,8 +69,7 @@ export async function DELETE(
       return NextResponse.json({ error: "Admin authentication required" }, { status: 401 });
     }
     try {
-      const dbUrl = process.env.DATABASE_URL || "";
-      if (dbUrl.length > 0 && !dbUrl.includes("placeholder") && !dbUrl.includes("localhost:5432")) {
+      if (isDatabaseActive()) {
         const isMongoId = /^[0-9a-fA-F]{24}$/.test(params.id);
         const where = isMongoId ? { id: params.id } : { slug: params.id };
         await prisma.product.delete({ where });

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { getProducts } from "@/lib/db";
+import { getProducts, isDatabaseActive } from "@/lib/db";
 import { prisma } from "@/lib/prisma";
 import { requireAdminSession } from "@/lib/auth";
 
@@ -70,8 +70,7 @@ export async function POST(request: NextRequest) {
 
     let createdProduct;
     try {
-      const dbUrl = process.env.DATABASE_URL || "";
-      if (dbUrl.length > 0 && !dbUrl.includes("placeholder") && !dbUrl.includes("localhost:5432")) {
+      if (isDatabaseActive()) {
         // Resolve categoryId if a slug or seed id was sent instead of ObjectId
         let resolvedCategoryId = validated.categoryId;
         if (!/^[0-9a-fA-F]{24}$/.test(resolvedCategoryId)) {

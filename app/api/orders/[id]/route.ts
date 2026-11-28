@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getOrderById } from "@/lib/db";
+import { getOrderById, isDatabaseActive } from "@/lib/db";
 import { prisma } from "@/lib/prisma";
 import { requireAdminSession } from "@/lib/auth";
 
@@ -32,7 +32,7 @@ export async function PATCH(
     let updated;
 
     try {
-      if (process.env.DATABASE_URL && !process.env.DATABASE_URL.includes("placeholder")) {
+      if (isDatabaseActive()) {
         const isMongoId = /^[0-9a-fA-F]{24}$/.test(params.id);
         const where = isMongoId ? { id: params.id } : { orderNumber: params.id };
         updated = await prisma.order.update({

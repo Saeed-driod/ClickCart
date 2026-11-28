@@ -1,6 +1,10 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import { CartItem, CartProduct, CouponItem } from "@/types";
+import {
+  STANDARD_SHIPPING_FEE,
+  calculateShippingFee,
+} from "@/lib/shipping";
 
 interface CartStore {
   items: CartItem[];
@@ -90,11 +94,14 @@ export const useCartStore = create<CartStore>()(
         return get().items.reduce((acc, item) => acc + item.quantity, 0);
       },
 
-      getTotal: (shippingFee = 5) => {
-        const subtotal = get().getSubtotal();
-        const discount = get().discountAmount;
-        const fee = subtotal >= 50 ? 0 : shippingFee;
-        return Math.max(0, subtotal - discount + fee);
+      getTotal: (shippingFee = STANDARD_SHIPPING_FEE) => {
+        const { items, discountAmount, getSubtotal } = get();
+        const subtotal = getSubtotal();
+        const fee =
+          shippingFee === STANDARD_SHIPPING_FEE
+            ? calculateShippingFee(subtotal, items.length > 0)
+            : shippingFee;
+        return Number(Math.max(0, subtotal - discountAmount + fee).toFixed(2));
       },
     }),
     {

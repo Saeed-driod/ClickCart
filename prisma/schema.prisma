@@ -192,11 +192,11 @@ model StoreSettings {
   id                    String   @id @default(auto()) @map("_id") @db.ObjectId
   storeName             String   @default("ClickCart")
   storeEmail            String   @default("support@clickcart.com")
-  storePhone            String   @default("+92 300 1234567")
-  address               String   @default("ClickCart HQ, Blue Area, Islamabad, Pakistan")
-  currency              String   @default("PKR")
-  shippingFee           Float    @default(200)
-  freeShippingThreshold Float    @default(3000)
+  storePhone            String   @default("+1 (800) 555-0199")
+  address               String   @default("350 Fifth Avenue, New York, NY 10118, USA")
+  currency              String   @default("USD")
+  shippingFee           Float    @default(5)
+  freeShippingThreshold Float    @default(50)
   logoUrl               String?
   updatedAt             DateTime @updatedAt
 }

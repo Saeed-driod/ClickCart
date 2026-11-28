@@ -1,16 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { SEED_COUPONS } from "@/data/seed-data";
 import { prisma } from "@/lib/prisma";
+import { isDatabaseActive } from "@/lib/db";
 import { requireAdminSession } from "@/lib/auth";
-
-function isDbActive() {
-  const url = process.env.DATABASE_URL || "";
-  return url.length > 0 && !url.includes("placeholder") && !url.includes("localhost:5432");
-}
 
 export async function GET() {
   try {
-    if (isDbActive()) {
+    if (isDatabaseActive()) {
       const coupons = await prisma.coupon.findMany({
         orderBy: { createdAt: "desc" },
       });
@@ -32,7 +28,7 @@ export async function POST(request: NextRequest) {
     let coupon;
 
     try {
-      if (isDbActive()) {
+      if (isDatabaseActive()) {
         coupon = await prisma.coupon.create({
           data: {
             code: json.code.toUpperCase(),

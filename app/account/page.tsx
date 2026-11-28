@@ -105,7 +105,7 @@ export default function AccountPage() {
           ) : orders.length === 0 ? (
             <div className="p-8 rounded-2xl border border-dashed border-border bg-card text-center space-y-3">
               <Package className="h-10 w-10 text-muted-foreground mx-auto opacity-50" />
-              <p className="text-xs text-muted-foreground">You haven't placed any orders yet.</p>
+              <p className="text-xs text-muted-foreground">You haven&apos;t placed any orders yet.</p>
               <Link
                 href="/products"
                 className="inline-block px-4 py-2 rounded-lg bg-indigo-600 text-white text-xs font-bold"

@@ -90,7 +90,7 @@ export default async function OrderConfirmationPage({ params }: OrderConfirmatio
         </div>
         <h1 className="text-3xl font-black">Thank You for Your Order!</h1>
         <p className="text-sm text-emerald-50 max-w-lg mx-auto">
-          Your order <strong className="font-mono text-white underline">{orderData.orderNumber}</strong> has been successfully placed. We've sent a confirmation email to {orderData.customerEmail}.
+          Your order <strong className="font-mono text-white underline">{orderData.orderNumber}</strong> has been successfully placed. We&apos;ve sent a confirmation email to {orderData.customerEmail}.
         </p>
       </div>
 

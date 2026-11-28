@@ -53,7 +53,7 @@ export default async function HomePage() {
     "@type": "Organization",
     name: SITE_NAME,
     url: SITE_URL,
-    logo: `${SITE_URL}/og-image.png`,
+    logo: `${SITE_URL}/logo.png`,
     contactPoint: {
       "@type": "ContactPoint",
       email: "support@clickcart.com",

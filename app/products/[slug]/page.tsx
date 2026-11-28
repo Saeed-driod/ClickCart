@@ -34,6 +34,8 @@ export async function generateMetadata({
   const canonicalUrl = `${SITE_URL}/products/${product.slug}`;
   const ogImageUrl = getSeoImageUrl(product.images[0]);
 
+  const productRegion = product.region === "UK" ? "UK" : "USA";
+
   return {
     title,
     description,
@@ -60,6 +62,12 @@ export async function generateMetadata({
       title,
       description,
       images: [ogImageUrl],
+    },
+    other: {
+      "product:price:amount": String(product.salePrice || product.price),
+      "product:price:currency": productRegion === "UK" ? "GBP" : "USD",
+      "product:availability": product.stock > 0 ? "in stock" : "out of stock",
+      "product:brand": product.brand?.name || SITE_NAME,
     },
   };
 }

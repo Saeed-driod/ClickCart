@@ -1,8 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 
-const AUTH_SECRET =
-  process.env.NEXTAUTH_SECRET || "clickcart_secret_key_123456789";
+function getMiddlewareAuthSecret(): string {
+  const secret = process.env.NEXTAUTH_SECRET;
+  if (!secret) {
+    if (process.env.NODE_ENV === "production") {
+      throw new Error("NEXTAUTH_SECRET environment variable must be set in production.");
+    }
+    throw new Error("NEXTAUTH_SECRET environment variable is required.");
+  }
+  return secret;
+}
+
+const AUTH_SECRET = getMiddlewareAuthSecret();
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;

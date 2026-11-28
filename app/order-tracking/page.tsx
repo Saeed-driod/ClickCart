@@ -154,7 +154,7 @@ export default function OrderTrackingPage() {
               <Package className="h-10 w-10 text-muted-foreground mx-auto mb-2 opacity-50" />
               <h3 className="font-bold text-base text-foreground">Order Not Found</h3>
               <p className="text-xs text-muted-foreground mt-1">
-                We could not locate any order with ID "{searchNumber}". Please verify the number and try again.
+                We could not locate any order with ID &ldquo;{searchNumber}&rdquo;. Please verify the number and try again.
               </p>
             </div>
           )}

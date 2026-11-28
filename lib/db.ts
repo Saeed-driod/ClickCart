@@ -4,10 +4,8 @@ import {
   SEED_BRANDS,
   SEED_PRODUCTS,
   SEED_COUPONS,
-  ProductSeed,
-  CategorySeed,
-  BrandSeed,
 } from "@/data/seed-data";
+import { FREE_SHIPPING_THRESHOLD, STANDARD_SHIPPING_FEE } from "./shipping";
 import { ProductItem, CategoryItem, BrandItem, OrderType, CouponItem } from "@/types";
 
 // In-memory runtime state for smooth fallback when database connection is pending
@@ -53,29 +51,29 @@ let memoryOrders: OrderType[] = [
     id: "ord-1001",
     orderNumber: "ORD-98241",
     userId: "cust-demo",
-    customerName: "Ayesha Khan",
-    customerEmail: "ayesha.khan@example.com",
-    customerPhone: "+92 301 5551234",
-    shippingAddress: "House 14, Street 9, Sector F-7/2, Islamabad, Pakistan",
+    customerName: "Emily Carter",
+    customerEmail: "emily.carter@example.com",
+    customerPhone: "+1 555 234 5678",
+    shippingAddress: "742 Evergreen Terrace, New York, NY 10001, United States",
     paymentMethod: "COD",
     paymentStatus: "PENDING",
     orderStatus: "PROCESSING",
-    subtotal: 18500,
-    discountAmount: 1850,
+    subtotal: 129.99,
+    discountAmount: 13.0,
     shippingFee: 0,
-    totalAmount: 16650,
+    totalAmount: 116.99,
     couponCode: "WELCOME10",
-    trackingNumber: "TCS-9921448",
-    trackingNotes: "Dispatched from Islamabad Fulfillment Center.",
+    trackingNumber: "USPS-9921448",
+    trackingNotes: "Dispatched from New York Fulfillment Center.",
     items: [
       {
         id: "item-1",
-        productId: "prod-1",
-        productName: "Pro Wireless Noise-Cancelling Headphones",
+        productId: "prod-usa-1",
+        productName: "Studio ANC Wireless Headphones (US Edition)",
         productImage: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&q=80",
-        price: 18500,
+        price: 129.99,
         quantity: 1,
-        subtotal: 18500,
+        subtotal: 129.99,
       },
     ],
     createdAt: new Date(Date.now() - 3600000 * 24).toISOString(),
@@ -85,38 +83,29 @@ let memoryOrders: OrderType[] = [
     id: "ord-1002",
     orderNumber: "ORD-98242",
     userId: "cust-demo-2",
-    customerName: "Bilal Tariq",
-    customerEmail: "bilal.t@example.com",
-    customerPhone: "+92 321 4448899",
-    shippingAddress: "Flat 402, Al-Latif Heights, Gulberg III, Lahore, Pakistan",
+    customerName: "Oliver Bennett",
+    customerEmail: "oliver.b@example.com",
+    customerPhone: "+44 7700 900123",
+    shippingAddress: "221B Baker Street, London NW1 6XE, United Kingdom",
     paymentMethod: "COD",
     paymentStatus: "PAID",
     orderStatus: "DELIVERED",
-    subtotal: 34500,
+    subtotal: 149.99,
     discountAmount: 0,
     shippingFee: 0,
-    totalAmount: 34500,
+    totalAmount: 149.99,
     couponCode: null,
-    trackingNumber: "TCS-9921449",
+    trackingNumber: "DPD-9921449",
     trackingNotes: "Delivered and signed by recipient.",
     items: [
       {
         id: "item-2",
-        productId: "prod-31",
-        productName: "Classic Slim-Fit Oxford Cotton Shirt",
-        productImage: "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=800&q=80",
-        price: 4500,
-        quantity: 2,
-        subtotal: 9000,
-      },
-      {
-        id: "item-3",
-        productId: "prod-61",
-        productName: "Digital Air Fryer XL 6L with Touch Preset",
-        productImage: "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?w=800&q=80",
-        price: 25500,
+        productId: "prod-uk-15",
+        productName: "British Hi-Fi Wireless Noise-Cancelling Headphones",
+        productImage: "https://images.unsplash.com/photo-1583394838336-acd977736f90?w=800&q=80",
+        price: 149.99,
         quantity: 1,
-        subtotal: 25500,
+        subtotal: 149.99,
       },
     ],
     createdAt: new Date(Date.now() - 3600000 * 48).toISOString(),
@@ -128,18 +117,34 @@ let memorySettings = {
   id: "default",
   storeName: "ClickCart",
   storeEmail: "support@clickcart.com",
-  storePhone: "+92 300 1234567",
-  address: "ClickCart HQ, Blue Area, Islamabad, Pakistan",
-  currency: "PKR",
-  shippingFee: 200,
-  freeShippingThreshold: 3000,
+  storePhone: "+1 (800) 555-0199",
+  address: "350 Fifth Avenue, New York, NY 10118, USA",
+  currency: "USD",
+  shippingFee: STANDARD_SHIPPING_FEE,
+  freeShippingThreshold: FREE_SHIPPING_THRESHOLD,
   logoUrl: null,
 };
 
-// Helper to determine if a live cloud database (e.g. Neon Postgres) is active
-function isDatabaseActive() {
-  const url = process.env.DATABASE_URL || "";
-  return url.length > 0 && !url.includes("placeholder") && !url.includes("localhost:5432");
+// Centralized check for whether a live external database is configured
+export function isDatabaseActive(): boolean {
+  const url = (process.env.DATABASE_URL || "").trim();
+  if (!url || url.includes("placeholder")) return false;
+  try {
+    const normalized = url
+      .replace(/^mongodb(\+srv)?:\/\//i, "http://")
+      .replace(/^postgres(ql)?:\/\//i, "http://");
+    const parsed = new URL(normalized);
+    if (
+      parsed.hostname === "localhost" ||
+      parsed.hostname === "127.0.0.1" ||
+      parsed.hostname === "::1"
+    ) {
+      return false;
+    }
+  } catch {
+    if (/\blocalhost\b|127\.0\.0\.1/i.test(url)) return false;
+  }
+  return true;
 }
 
 // Database Access Helpers with safe fallback
@@ -479,7 +484,7 @@ export async function validateCoupon(code: string, subtotal: number): Promise<{
           return {
             valid: false,
             discount: 0,
-            message: `Minimum order amount for this coupon is ₨ ${coupon.minOrderAmount.toLocaleString()}`,
+            message: `Minimum order amount for this coupon is $${coupon.minOrderAmount.toFixed(2)}`,
           };
         }
         let discount = 0;
@@ -494,7 +499,7 @@ export async function validateCoupon(code: string, subtotal: number): Promise<{
         return {
           valid: true,
           coupon: coupon as CouponItem,
-          discount: Math.round(discount),
+          discount: Number(discount.toFixed(2)),
           message: "Coupon applied successfully!",
         };
       }
@@ -512,7 +517,7 @@ export async function validateCoupon(code: string, subtotal: number): Promise<{
     return {
       valid: false,
       discount: 0,
-      message: `Minimum order amount for this coupon is ₨ ${coupon.minOrderAmount.toLocaleString()}`,
+      message: `Minimum order amount for this coupon is $${coupon.minOrderAmount.toFixed(2)}`,
     };
   }
 
@@ -529,7 +534,7 @@ export async function validateCoupon(code: string, subtotal: number): Promise<{
   return {
     valid: true,
     coupon,
-    discount: Math.round(discount),
+    discount: Number(discount.toFixed(2)),
     message: "Coupon applied successfully!",
   };
 }

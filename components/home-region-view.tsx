@@ -26,11 +26,12 @@ export function HomeRegionView({
   const [products, setProducts] = React.useState<ProductItem[]>(initialProducts);
   const [total, setTotal] = React.useState<number>(initialTotal);
   const [loading, setLoading] = React.useState(false);
+  const loadedRegionRef = React.useRef<string>(initialRegion);
 
   // Immediately fetch region-specific products whenever the customer switches region
   React.useEffect(() => {
     if (!hasHydrated) return;
-    if (activeRegion === initialRegion && products.every((p) => p.region === activeRegion)) {
+    if (activeRegion === loadedRegionRef.current) {
       return;
     }
 
@@ -41,6 +42,7 @@ export function HomeRegionView({
         const res = await fetch(`/api/products?region=${activeRegion}&limit=12`);
         if (res.ok && !cancelled) {
           const data = await res.json();
+          loadedRegionRef.current = activeRegion;
           setProducts(data.products || []);
           setTotal(data.total || 0);
         }
@@ -55,7 +57,7 @@ export function HomeRegionView({
     return () => {
       cancelled = true;
     };
-  }, [activeRegion, hasHydrated, initialRegion]);
+  }, [activeRegion, hasHydrated]);
 
   const isUK = activeRegion === "UK";
 

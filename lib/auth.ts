@@ -3,9 +3,20 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import bcrypt from "bcryptjs";
 import { prisma } from "./prisma";
+import { isDatabaseActive } from "./db";
 
-export const AUTH_SECRET =
-  process.env.NEXTAUTH_SECRET || "clickcart_secret_key_123456789";
+function getRequiredAuthSecret(): string {
+  const secret = process.env.NEXTAUTH_SECRET;
+  if (!secret) {
+    if (process.env.NODE_ENV === "production") {
+      throw new Error("NEXTAUTH_SECRET environment variable must be set in production.");
+    }
+    throw new Error("NEXTAUTH_SECRET environment variable is required.");
+  }
+  return secret;
+}
+
+export const AUTH_SECRET = getRequiredAuthSecret();
 
 export const ADMIN_SESSION_VERSION = "v2";
 
@@ -41,10 +52,11 @@ export const authOptions: NextAuthOptions = {
         const email = credentials.email.toLowerCase().trim();
         const password = credentials.password;
 
-        // Optional ADMIN_PASSWORD override via environment variable
+        // Admin login via ADMIN_PASSWORD environment variable
         if (
           email === "admin@clickcart.com" &&
           process.env.ADMIN_PASSWORD &&
+          process.env.ADMIN_PASSWORD.length > 0 &&
           password === process.env.ADMIN_PASSWORD
         ) {
           return {
@@ -56,15 +68,10 @@ export const authOptions: NextAuthOptions = {
           };
         }
 
-        // Check live MongoDB user record first
+        // Check live database user record
         let dbCheckedUser = false;
         try {
-          const dbUrl = process.env.DATABASE_URL || "";
-          if (
-            dbUrl.length > 0 &&
-            !dbUrl.includes("placeholder") &&
-            !dbUrl.includes("localhost:5432")
-          ) {
+          if (isDatabaseActive()) {
             const user = await prisma.user.findUnique({
               where: { email },
             });
@@ -90,20 +97,10 @@ export const authOptions: NextAuthOptions = {
           if (dbCheckedUser) {
             throw dbError;
           }
-          console.warn("DB user check failed, falling back to seed accounts:", dbError);
+          console.warn("DB user check failed:", dbError);
         }
 
-        // Offline / unseeded fallback accounts
-        if (email === "admin@clickcart.com" && password === "Admin@123") {
-          return {
-            id: "user-admin-seed",
-            name: "ClickCart Administrator",
-            email: "admin@clickcart.com",
-            role: "ADMIN",
-            image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&q=80",
-          };
-        }
-
+        // Demo customer account (offline / non-admin convenience only)
         if (email === "customer@clickcart.com" && password === "Customer@123") {
           return {
             id: "user-customer-seed",
