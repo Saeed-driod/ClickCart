@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
+import { requireAdminSession } from "@/lib/auth";
 
 const ALLOWED_TYPES = [
   "image/jpeg",
@@ -13,6 +14,11 @@ const MAX_FILE_SIZE = 4 * 1024 * 1024; // 4 MB
 
 export async function POST(request: NextRequest) {
   try {
+    const adminSession = await requireAdminSession();
+    if (!adminSession) {
+      return NextResponse.json({ error: "Admin authentication required" }, { status: 401 });
+    }
+
     const formData = await request.formData();
     const file = formData.get("file") as File | null;
 

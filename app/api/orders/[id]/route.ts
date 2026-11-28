@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getOrderById } from "@/lib/db";
 import { prisma } from "@/lib/prisma";
+import { requireAdminSession } from "@/lib/auth";
 
 export async function GET(
   request: NextRequest,
@@ -22,6 +23,11 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   try {
+    const adminSession = await requireAdminSession();
+    if (!adminSession) {
+      return NextResponse.json({ error: "Admin authentication required" }, { status: 401 });
+    }
+
     const json = await request.json();
     let updated;
 

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { SEED_COUPONS } from "@/data/seed-data";
 import { prisma } from "@/lib/prisma";
+import { requireAdminSession } from "@/lib/auth";
 
 function isDbActive() {
   const url = process.env.DATABASE_URL || "";
@@ -22,6 +23,11 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
+    const adminSession = await requireAdminSession();
+    if (!adminSession) {
+      return NextResponse.json({ error: "Admin authentication required" }, { status: 401 });
+    }
+
     const json = await request.json();
     let coupon;
 

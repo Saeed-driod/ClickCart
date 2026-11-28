@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useSession, signIn, signOut } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 import {
   LayoutDashboard,
   Package,
@@ -15,12 +15,7 @@ import {
   Settings,
   LogOut,
   ShieldCheck,
-  Lock,
-  Mail,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { toast } from "sonner";
 
 const ADMIN_LINKS = [
   { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
@@ -38,100 +33,27 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const router = useRouter();
   const { data: session, status } = useSession();
 
-  const [email, setEmail] = React.useState("");
-  const [password, setPassword] = React.useState("");
-  const [isLoggingIn, setIsLoggingIn] = React.useState(false);
+  const isLoginRoute = pathname === "/admin/login";
+  const user = session?.user as any;
+  const isVerifiedAdmin =
+    user?.role === "ADMIN" && user?.sessionVersion === "v2";
 
-  const isAdmin = (session?.user as any)?.role === "ADMIN";
-
-  const handleAdminLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoggingIn(true);
-    const result = await signIn("credentials", {
-      email,
-      password,
-      redirect: false,
-      callbackUrl: "/admin",
-    });
-    setIsLoggingIn(false);
-
-    if (result?.error) {
-      toast.error("Invalid admin credentials.");
-    } else {
-      toast.success("Signed in to Admin Portal");
-      router.refresh();
+  React.useEffect(() => {
+    if (!isLoginRoute && status !== "loading" && !isVerifiedAdmin) {
+      router.replace("/admin/login");
     }
-  };
+  }, [isLoginRoute, status, isVerifiedAdmin, router]);
 
-  if (status === "loading") {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <p className="text-xs text-muted-foreground animate-pulse">Loading Admin Portal...</p>
-      </div>
-    );
+  if (isLoginRoute) {
+    return <>{children}</>;
   }
 
-  // Standalone Admin Login Screen (completely separate from customer storefront)
-  if (status === "unauthenticated" || !isAdmin) {
+  if (status === "loading" || !isVerifiedAdmin) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-muted/30 p-4">
-        <div className="max-w-md w-full p-8 rounded-3xl border border-border bg-card space-y-6 shadow-xl">
-          <div className="text-center space-y-2">
-            <div className="h-14 w-14 rounded-2xl bg-indigo-600 text-white flex items-center justify-center mx-auto shadow-md">
-              <ShieldCheck className="h-7 w-7" />
-            </div>
-            <h1 className="text-2xl font-black text-foreground">ClickCart Admin</h1>
-            <p className="text-xs text-muted-foreground">
-              Standalone Management Portal. Sign in with your administrator account.
-            </p>
-          </div>
-
-          {status === "authenticated" && !isAdmin && (
-            <div className="p-3 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 text-xs text-red-700 dark:text-red-300 text-center">
-              Signed in as <strong>{session?.user?.email}</strong> (Customer). Please sign in with an Admin account.
-            </div>
-          )}
-
-          <form onSubmit={handleAdminLogin} className="space-y-4">
-            <div>
-              <label className="block text-xs font-semibold text-muted-foreground mb-1">
-                Admin Email
-              </label>
-              <div className="relative">
-                <Input
-                  type="email"
-                  required
-                  placeholder="admin@clickcart.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="pl-9 text-xs"
-                />
-                <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-muted-foreground mb-1">
-                Password
-              </label>
-              <div className="relative">
-                <Input
-                  type="password"
-                  required
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="pl-9 text-xs"
-                />
-                <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              </div>
-            </div>
-
-            <Button type="submit" size="lg" isLoading={isLoggingIn} className="w-full font-bold">
-              Sign In to Admin
-            </Button>
-          </form>
-        </div>
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <p className="text-xs text-muted-foreground animate-pulse">
+          Verifying Admin Password Session...
+        </p>
       </div>
     );
   }
@@ -146,7 +68,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
           <div>
             <span className="font-black text-base text-foreground block leading-tight">ClickCart</span>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-600">Admin Portal</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-600">
+              Admin Portal
+            </span>
           </div>
         </div>
 
@@ -189,9 +113,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               </div>
             </div>
             <button
-              onClick={() => signOut({ callbackUrl: "/admin" })}
+              onClick={() => signOut({ callbackUrl: "/admin/login" })}
               className="p-1.5 text-muted-foreground hover:text-red-600 transition-colors"
-              title="Sign Out"
+              title="Lock & Sign Out"
             >
               <LogOut className="h-4 w-4" />
             </button>

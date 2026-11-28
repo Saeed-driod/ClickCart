@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getProductBySlug } from "@/lib/db";
 import { prisma } from "@/lib/prisma";
+import { requireAdminSession } from "@/lib/auth";
 
 export async function GET(
   request: NextRequest,
@@ -22,6 +23,11 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
+    const adminSession = await requireAdminSession();
+    if (!adminSession) {
+      return NextResponse.json({ error: "Admin authentication required" }, { status: 401 });
+    }
+
     const json = await request.json();
     let updated;
 
@@ -59,6 +65,10 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
+    const adminSession = await requireAdminSession();
+    if (!adminSession) {
+      return NextResponse.json({ error: "Admin authentication required" }, { status: 401 });
+    }
     try {
       const dbUrl = process.env.DATABASE_URL || "";
       if (dbUrl.length > 0 && !dbUrl.includes("placeholder") && !dbUrl.includes("localhost:5432")) {

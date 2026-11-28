@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getProducts } from "@/lib/db";
 import { prisma } from "@/lib/prisma";
+import { requireAdminSession } from "@/lib/auth";
 
 const productCreateSchema = z.object({
   name: z.string().min(2, "Product name must be at least 2 characters"),
@@ -55,6 +56,11 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const adminSession = await requireAdminSession();
+    if (!adminSession) {
+      return NextResponse.json({ error: "Admin authentication required" }, { status: 401 });
+    }
+
     const json = await request.json();
     const validated = productCreateSchema.parse(json);
 

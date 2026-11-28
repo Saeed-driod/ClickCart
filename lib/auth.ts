@@ -1,13 +1,18 @@
-import { NextAuthOptions } from "next-auth";
+import { NextAuthOptions, getServerSession } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import bcrypt from "bcryptjs";
 import { prisma } from "./prisma";
 
+export const AUTH_SECRET =
+  process.env.NEXTAUTH_SECRET || "clickcart_secret_key_123456789";
+
+export const ADMIN_SESSION_VERSION = "v2";
+
 export const authOptions: NextAuthOptions = {
   session: {
     strategy: "jwt",
-    maxAge: 30 * 24 * 60 * 60, // 30 days
+    maxAge: 7 * 24 * 60 * 60, // 7 days
   },
   pages: {
     signIn: "/auth/signin",
@@ -36,32 +41,59 @@ export const authOptions: NextAuthOptions = {
         const email = credentials.email.toLowerCase().trim();
         const password = credentials.password;
 
-        // Try DB first if live cloud database is configured
+        // Optional ADMIN_PASSWORD override via environment variable
+        if (
+          email === "admin@clickcart.com" &&
+          process.env.ADMIN_PASSWORD &&
+          password === process.env.ADMIN_PASSWORD
+        ) {
+          return {
+            id: "user-admin-env",
+            name: "ClickCart Administrator",
+            email: "admin@clickcart.com",
+            role: "ADMIN",
+            image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&q=80",
+          };
+        }
+
+        // Check live MongoDB user record first
+        let dbCheckedUser = false;
         try {
           const dbUrl = process.env.DATABASE_URL || "";
-          if (dbUrl.length > 0 && !dbUrl.includes("placeholder") && !dbUrl.includes("localhost:5432")) {
+          if (
+            dbUrl.length > 0 &&
+            !dbUrl.includes("placeholder") &&
+            !dbUrl.includes("localhost:5432")
+          ) {
             const user = await prisma.user.findUnique({
               where: { email },
             });
 
-            if (user && user.password && user.isActive) {
-              const isValid = await bcrypt.compare(password, user.password);
-              if (isValid) {
-                return {
-                  id: user.id,
-                  name: user.name,
-                  email: user.email,
-                  role: user.role,
-                  image: user.image,
-                };
+            if (user) {
+              dbCheckedUser = true;
+              if (user.password && user.isActive) {
+                const isValid = await bcrypt.compare(password, user.password);
+                if (isValid) {
+                  return {
+                    id: user.id,
+                    name: user.name,
+                    email: user.email,
+                    role: user.role,
+                    image: user.image,
+                  };
+                }
               }
+              throw new Error("Invalid email or password.");
             }
           }
-        } catch (dbError) {
-          console.warn("DB user check failed, falling back to static accounts:", dbError);
+        } catch (dbError: any) {
+          if (dbCheckedUser) {
+            throw dbError;
+          }
+          console.warn("DB user check failed, falling back to seed accounts:", dbError);
         }
 
-        // Standard Seed Accounts (Available in memory and offline)
+        // Offline / unseeded fallback accounts
         if (email === "admin@clickcart.com" && password === "Admin@123") {
           return {
             id: "user-admin-seed",
@@ -91,6 +123,7 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.id = user.id;
         token.role = (user as any).role || "CUSTOMER";
+        token.sessionVersion = ADMIN_SESSION_VERSION;
       }
       return token;
     },
@@ -98,9 +131,19 @@ export const authOptions: NextAuthOptions = {
       if (token && session.user) {
         (session.user as any).id = token.id as string;
         (session.user as any).role = (token.role as string) || "CUSTOMER";
+        (session.user as any).sessionVersion = token.sessionVersion as string;
       }
       return session;
     },
   },
-  secret: process.env.NEXTAUTH_SECRET || "clickcart_secret_key_123456789",
+  secret: AUTH_SECRET,
 };
+
+export async function requireAdminSession() {
+  const session = await getServerSession(authOptions);
+  const user = session?.user as any;
+  if (!session || user?.role !== "ADMIN" || user?.sessionVersion !== ADMIN_SESSION_VERSION) {
+    return null;
+  }
+  return session;
+}
