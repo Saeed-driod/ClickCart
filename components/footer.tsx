@@ -26,18 +26,18 @@ export function Footer() {
 
           {/* Quick Links */}
           <div>
-            <h5 className="font-bold text-xs uppercase tracking-wider text-muted-foreground mb-3">Shop</h5>
+            <h2 className="font-bold text-xs uppercase tracking-wider text-muted-foreground mb-3">Shop</h2>
             <ul className="space-y-2 text-xs text-muted-foreground">
               <li><Link href="/products" className="hover:text-indigo-600">All Products</Link></li>
-              <li><Link href="/products?category=electronics" className="hover:text-indigo-600">Electronics</Link></li>
-              <li><Link href="/products?category=fashion" className="hover:text-indigo-600">Fashion</Link></li>
-              <li><Link href="/products?category=home-kitchen" className="hover:text-indigo-600">Home & Kitchen</Link></li>
+              <li><Link href="/category/electronics" className="hover:text-indigo-600">Electronics</Link></li>
+              <li><Link href="/category/fashion" className="hover:text-indigo-600">Fashion</Link></li>
+              <li><Link href="/category/home-kitchen" className="hover:text-indigo-600">Home & Kitchen</Link></li>
             </ul>
           </div>
 
           {/* Account */}
           <div>
-            <h5 className="font-bold text-xs uppercase tracking-wider text-muted-foreground mb-3">Support</h5>
+            <h2 className="font-bold text-xs uppercase tracking-wider text-muted-foreground mb-3">Support</h2>
             <ul className="space-y-2 text-xs text-muted-foreground">
               <li><Link href="/cart" className="hover:text-indigo-600">Cart</Link></li>
               <li><Link href="/wishlist" className="hover:text-indigo-600">Wishlist</Link></li>

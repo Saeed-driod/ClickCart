@@ -100,7 +100,7 @@ export function HomeRegionView({
           {categories.map((cat) => (
             <Link
               key={cat.id}
-              href={`/products?region=${activeRegion}&category=${cat.slug}`}
+              href={`/category/${cat.slug}`}
               className="px-4 py-2 rounded-full border border-border bg-card text-xs font-semibold text-foreground hover:border-indigo-600 hover:text-indigo-600 transition-colors"
             >
               {cat.name}
@@ -133,7 +133,7 @@ export function HomeRegionView({
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
             {products.map((product, idx) => (
-              <ProductCard key={product.id} product={product} priority={idx < 4} />
+              <ProductCard key={product.id} product={product} priority={idx < 2} />
             ))}
           </div>
         )}

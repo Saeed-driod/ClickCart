@@ -136,7 +136,7 @@ export function ProductDetailView({ product, relatedProducts }: ProductDetailVie
               <button
                 key={idx}
                 onClick={() => setSelectedImage(idx)}
-                className={`relative h-18 w-18 sm:h-20 sm:w-20 rounded-xl overflow-hidden border-2 transition-all ${
+                className={`relative h-16 w-16 sm:h-20 sm:w-20 rounded-xl overflow-hidden border-2 transition-all ${
                   selectedImage === idx
                     ? "border-indigo-600 ring-2 ring-indigo-600/30"
                     : "border-border hover:border-muted-foreground/50 opacity-70 hover:opacity-100"
@@ -144,8 +144,10 @@ export function ProductDetailView({ product, relatedProducts }: ProductDetailVie
               >
                 <Image
                   src={img}
-                  alt={`${product.name} thumbnail ${idx + 1}`}
+                  alt={`${product.name} - view ${idx + 1}`}
                   fill
+                  sizes="80px"
+                  quality={75}
                   unoptimized={img.startsWith("data:")}
                   className="object-cover"
                 />
@@ -157,8 +159,10 @@ export function ProductDetailView({ product, relatedProducts }: ProductDetailVie
           <div className="relative flex-1 aspect-square rounded-2xl overflow-hidden border border-border bg-muted/30">
             <Image
               src={product.images[selectedImage] || product.images[0]}
-              alt={product.name}
+              alt={product.name || "ClickCart product"}
               fill
+              sizes="(max-width: 1024px) 100vw, 50vw"
+              quality={85}
               unoptimized={(product.images[selectedImage] || product.images[0] || "").startsWith("data:")}
               priority
               className="object-cover object-center"
@@ -185,7 +189,7 @@ export function ProductDetailView({ product, relatedProducts }: ProductDetailVie
           <div>
             <div className="flex items-center justify-between text-xs text-muted-foreground mb-1.5">
               <Link
-                href={`/products?category=${product.category?.slug}`}
+                href={product.category?.slug ? `/category/${product.category.slug}` : "/products"}
                 className="font-semibold text-indigo-600 dark:text-indigo-400 hover:underline"
               >
                 {product.category?.name}
@@ -377,12 +381,12 @@ export function ProductDetailView({ product, relatedProducts }: ProductDetailVie
           {activeTab === "description" && (
             <div className="prose dark:prose-invert max-w-none text-sm text-muted-foreground space-y-4">
               <p className="leading-relaxed text-foreground">{product.description}</p>
-              <h4 className="text-base font-bold text-foreground mt-4">Key Highlights</h4>
+              <h2 className="text-base font-bold text-foreground mt-4">Key Highlights</h2>
               <ul className="list-disc pl-5 space-y-1">
                 <li>Original retail packaging with serial registration.</li>
                 <li>Comprehensive quality assurance check before dispatch.</li>
                 <li>Delivered safely with tamper-evident packaging seals.</li>
-                <li>Eligible for ClickCart Express Delivery in Karachi, Lahore, and Islamabad within 24-48 hours.</li>
+                <li>Eligible for ClickCart Express Delivery within 1-3 business days.</li>
               </ul>
             </div>
           )}
@@ -420,7 +424,7 @@ export function ProductDetailView({ product, relatedProducts }: ProductDetailVie
             <div className="space-y-8">
               {/* Write Review Box */}
               <div className="rounded-2xl border border-border bg-card p-6">
-                <h4 className="font-bold text-base text-foreground mb-1">Leave a Review</h4>
+                <h2 className="font-bold text-base text-foreground mb-1">Leave a Review</h2>
                 <p className="text-xs text-muted-foreground mb-4">
                   Have you purchased this product? Share your experience with other shoppers.
                 </p>
@@ -503,9 +507,9 @@ export function ProductDetailView({ product, relatedProducts }: ProductDetailVie
       {relatedProducts.length > 0 && (
         <div className="border-t border-border pt-12">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-xl font-black text-foreground">You May Also Like</h3>
+            <h2 className="text-xl font-black text-foreground">You May Also Like</h2>
             <Link
-              href={`/products?category=${product.category?.slug}`}
+              href={product.category?.slug ? `/category/${product.category.slug}` : "/products"}
               className="text-xs font-semibold text-indigo-600 hover:underline"
             >
               More in {product.category?.name}

@@ -3,19 +3,61 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 import { StoreShell } from "@/components/store-shell";
+import { SITE_URL, SITE_NAME } from "@/lib/site";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "ClickCart - Simple & Fast Online Shopping (USA & UK)",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: "ClickCart – Simple & Fast Online Shopping (USA & UK)",
+    template: "%s",
+  },
   description:
-    "Shop electronics, fashion, home essentials, beauty, sports, toys, books, and groceries in the USA and UK.",
-  keywords: "ecommerce, online shopping, clickcart, usa, uk, electronics, fashion",
+    "Shop curated electronics, fashion, home & kitchen, beauty, sports, toys, books, and groceries online at ClickCart with fast USA and UK delivery.",
+  keywords: [
+    "ClickCart",
+    "online shopping",
+    "ecommerce USA",
+    "ecommerce UK",
+    "electronics",
+    "fashion",
+    "home and kitchen",
+  ],
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "32x32" },
+      { url: "/favicon.svg", type: "image/svg+xml" },
+    ],
+    shortcut: "/favicon.ico",
+    apple: "/favicon.svg",
+  },
+  alternates: {
+    canonical: SITE_URL,
+  },
   openGraph: {
-    title: "ClickCart - USA & UK Online Store",
-    description: "Select your region (USA or UK) and shop curated products.",
+    title: "ClickCart – Simple & Fast Online Shopping (USA & UK)",
+    description:
+      "Shop curated electronics, fashion, home & kitchen, beauty, sports, toys, books, and groceries online at ClickCart.",
+    url: SITE_URL,
+    siteName: SITE_NAME,
     type: "website",
-    siteName: "ClickCart",
+    locale: "en_US",
+    images: [
+      {
+        url: `${SITE_URL}/og-image.png`,
+        width: 1200,
+        height: 630,
+        alt: "ClickCart – USA & UK Online Shopping Store",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "ClickCart – Simple & Fast Online Shopping (USA & UK)",
+    description:
+      "Shop curated electronics, fashion, home & kitchen, beauty, sports, toys, books, and groceries online at ClickCart.",
+    images: [`${SITE_URL}/og-image.png`],
   },
 };
 

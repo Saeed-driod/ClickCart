@@ -1,10 +1,12 @@
 import React from "react";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { getProducts, getCategories, getBrands } from "@/lib/db";
 import { ProductCard } from "@/components/product-card";
 import { ProductsFilter } from "@/components/products-filter";
 import { ChevronLeft, ChevronRight, PackageX } from "lucide-react";
+import { SITE_URL, SITE_NAME } from "@/lib/site";
 
 interface ProductsPageProps {
   searchParams: {
@@ -24,6 +26,49 @@ interface ProductsPageProps {
 }
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata({
+  searchParams,
+}: ProductsPageProps): Promise<Metadata> {
+  const categoryName = searchParams.category
+    ? searchParams.category.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())
+    : "";
+  const title = categoryName
+    ? `Shop ${categoryName} | ${SITE_NAME}`
+    : `All Products Catalog | ${SITE_NAME}`;
+  const description = categoryName
+    ? `Browse curated ${categoryName} products at ${SITE_NAME} across the USA and UK.`
+    : `Explore the full catalog of curated electronics, fashion, home & kitchen, beauty, sports, toys, books, and groceries at ${SITE_NAME}.`;
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: `${SITE_URL}/products`,
+    },
+    openGraph: {
+      title,
+      description,
+      url: `${SITE_URL}/products`,
+      siteName: SITE_NAME,
+      type: "website",
+      images: [
+        {
+          url: `${SITE_URL}/og-image.png`,
+          width: 1200,
+          height: 630,
+          alt: title,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [`${SITE_URL}/og-image.png`],
+    },
+  };
+}
 
 export default async function ProductsPage({ searchParams }: ProductsPageProps) {
   const page = Number(searchParams.page) || 1;
@@ -151,7 +196,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
             <>
               <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
                 {products.map((product, idx) => (
-                  <ProductCard key={product.id} product={product} priority={idx < 4} />
+                  <ProductCard key={product.id} product={product} priority={idx < 2} />
                 ))}
               </div>
 

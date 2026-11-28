@@ -68,10 +68,11 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
         <Link href={`/products/${product.slug}`} className="block h-full w-full">
           <Image
             src={product.images[0] || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&q=80"}
-            alt={product.name}
+            alt={product.name || "ClickCart product"}
             fill
             unoptimized={(product.images[0] || "").startsWith("data:")}
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+            quality={80}
             priority={priority}
             className="object-cover object-center transition-transform duration-500 group-hover:scale-105"
           />
@@ -122,7 +123,7 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
         {/* Category & Brand */}
         <div className="mb-1 flex items-center justify-between text-xs text-muted-foreground">
           <Link
-            href={`/products?category=${product.category?.slug}`}
+            href={product.category?.slug ? `/category/${product.category.slug}` : "/products"}
             className="hover:text-indigo-600 truncate max-w-[120px]"
           >
             {product.category?.name || "General"}
@@ -135,13 +136,15 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
         </div>
 
         {/* Product Title */}
-        <Link
-          href={`/products/${product.slug}`}
-          className="line-clamp-2 text-sm font-semibold text-foreground hover:text-indigo-600 transition-colors mb-2 min-h-[2.5rem]"
-          title={product.name}
-        >
-          {product.name}
-        </Link>
+        <h3 className="text-sm font-semibold text-foreground hover:text-indigo-600 transition-colors mb-2 min-h-[2.5rem]">
+          <Link
+            href={`/products/${product.slug}`}
+            className="line-clamp-2"
+            title={product.name}
+          >
+            {product.name}
+          </Link>
+        </h3>
 
         {/* Rating */}
         <div className="mb-3 flex items-center gap-1.5 text-xs">
